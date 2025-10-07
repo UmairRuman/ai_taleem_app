@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "875468350917",
+    "project_id": "ai-taleem-app",
+    "storage_bucket": "ai-taleem-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:875468350917:android:0399e0debe8a8a924917ac",
+        "android_client_info": {
+          "package_name": "com.example.taleem_ai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD7KcAH1dsSho1fqEvZgsxI2DoMCdRIYeU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
