@@ -1,28 +1,24 @@
 // Path: lib/core/domain/entities/concept.dart
-
-import 'package:taleem_ai/core/domain/entities/quiz.dart';
+import 'package:taleem_ai/core/domain/entities/content.dart';
 
 class Concept {
-  final String id;
-  final String name;
+  final String conceptId;
+  final String title;
   final String? nameUrdu;
-  final int grade;
+  final int gradeLevel;
   final String topic;
   final int order;
   final List<String> prerequisites;
-  final Map<String, dynamic>
-  content; // Flexible for introduction, definition, examples, etc.
-  final String?
-  descriptionUrdu; // Kept for compatibility, but contentUrdu could be added if needed
+  final Content content; // Changed from Map to Content class
+  final String? descriptionUrdu;
   final String difficulty; // "easy" | "medium" | "hard"
   final int estimatedTimeMinutes;
-  final List<Question> practiceQuizzes; // Embedded quizzes for MVP
 
   Concept({
-    required this.id,
+    required this.conceptId,
+    required this.title,
     this.nameUrdu,
-    required this.name,
-    required this.grade,
+    required this.gradeLevel,
     required this.topic,
     required this.order,
     required this.prerequisites,
@@ -30,43 +26,37 @@ class Concept {
     this.descriptionUrdu,
     required this.difficulty,
     required this.estimatedTimeMinutes,
-    required this.practiceQuizzes,
   });
 
   factory Concept.fromMap(Map<String, dynamic> map) {
     return Concept(
-      id: map['id'] as String,
-      name: map['name'] as String,
+      conceptId: map['concept_id'] as String,
+      title: map['title'] as String,
       nameUrdu: map['nameUrdu'] as String?,
-      grade: map['grade'] as int,
+      gradeLevel: map['grade_level'] as int,
       topic: map['topic'] as String,
-      order: map['order'] as int,
+      order: map['order'] as int? ?? 0,
       prerequisites: List<String>.from(map['prerequisites'] ?? []),
-      content: Map<String, dynamic>.from(map['content'] ?? {}),
+      content: Content.fromMap(map['content'] as Map<String, dynamic>),
       descriptionUrdu: map['descriptionUrdu'] as String?,
       difficulty: map['difficulty'] as String,
       estimatedTimeMinutes: map['estimatedTimeMinutes'] as int,
-      practiceQuizzes:
-          (map['practiceQuizzes'] as List<dynamic>? ?? [])
-              .map((e) => Question.fromMap(e as Map<String, dynamic>))
-              .toList(),
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
-      'name': name,
+      'concept_id': conceptId,
+      'title': title,
       'nameUrdu': nameUrdu,
-      'grade': grade,
+      'grade_level': gradeLevel,
       'topic': topic,
       'order': order,
       'prerequisites': prerequisites,
-      'content': content,
+      'content': content.toMap(),
       'descriptionUrdu': descriptionUrdu,
       'difficulty': difficulty,
       'estimatedTimeMinutes': estimatedTimeMinutes,
-      'practiceQuizzes': practiceQuizzes.map((q) => q.toMap()).toList(),
     };
   }
 }

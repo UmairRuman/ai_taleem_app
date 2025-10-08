@@ -6,6 +6,9 @@ import 'package:taleem_ai/features/admin/fake_data_entry/recommendation_data_ent
 import 'package:taleem_ai/features/admin/fake_data_entry/user_data_entry_screen.dart';
 import 'package:taleem_ai/features/auth/presentation/screens/email_verification_screen.dart';
 import 'package:taleem_ai/features/auth/presentation/screens/forgot_pass_screen.dart';
+import 'package:taleem_ai/features/learning/presentation/screens/concept_detail_screen.dart';
+import 'package:taleem_ai/features/learning/presentation/screens/concept_quiz_screen.dart';
+import 'package:taleem_ai/features/learning/presentation/screens/course_content_list_screen.dart';
 
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
@@ -15,7 +18,7 @@ import '../../features/onboarding/presentation/screens/splash_screen.dart';
 import 'route_names.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: RouteNames.realContentEntry,
+  initialLocation: RouteNames.courseContentListScreen,
   routes: [
     GoRoute(
       path: RouteNames.splash,
@@ -63,6 +66,7 @@ final GoRouter appRouter = GoRouter(
     // Fake Data Entry Screens for Admin
     GoRoute(
       path: RouteNames.fakeInstitutionDataEntrySc,
+
       builder: (context, state) => const InstitutionDataEntryScreen(),
     ),
     GoRoute(
@@ -74,17 +78,29 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const UserDataEntryScreen(),
     ),
 
-    // GoRoute(
-    //   path: RouteNames.home,
-    //   builder: (context, state) => const StudentHomeScreen(),
-    // ),
-    // GoRoute(
-    //   path: RouteNames.teacherDashboard,
-    //   builder: (context, state) => const TeacherDashboard(),
-    // ),
-    // GoRoute(
-    //   path: '/parent/dashboard',
-    //   builder: (context, state) => const ParentDashboard(),
-    // ),
+    // Content Screens
+    GoRoute(
+      path: RouteNames.courseContentListScreen,
+      builder: (context, state) {
+        final grade = int.tryParse(state.uri.queryParameters['grade'] ?? '6');
+        return CourseContentListScreen(initialGrade: grade);
+      },
+    ),
+    GoRoute(
+      path: '${RouteNames.conceptDetailScreen}/:conceptId',
+      name: 'conceptDetail',
+      builder: (context, state) {
+        final conceptId = state.pathParameters['conceptId']!;
+        return ConceptDetailScreen(conceptId: conceptId);
+      },
+    ),
+    GoRoute(
+      path: '${RouteNames.conceptQuizScreen}/:conceptId',
+      name: 'conceptQuiz',
+      builder: (context, state) {
+        final conceptId = state.pathParameters['conceptId']!;
+        return ConceptQuizScreen(conceptId: conceptId);
+      },
+    ),
   ],
 );

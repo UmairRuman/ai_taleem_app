@@ -9,6 +9,12 @@ class RouteNames {
   static const String forgotPassword = '/forgot-password';
   static const String realContentEntry = '/data-entry';
   static const String emailVerification = "/email-verification";
+
+  //Content screens
+  static const String courseContentListScreen = '/course-content';
+  static const String conceptDetailScreen = '/concept-detail';
+  static const String conceptQuizScreen = '/concept-quiz';
+  // Fake Data entry Screens for Admin
   static const String fakeInstitutionDataEntrySc =
       "/fake-institution-data-entry";
   static const String fakeUserDataEntrySc = "/fake-user-data-entry";

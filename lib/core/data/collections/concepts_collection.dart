@@ -16,19 +16,19 @@ class ConceptsCollection {
 
   Future<bool> addConcept(Concept concept) async {
     try {
-      await conceptsCollection.doc(concept.id).set(concept.toMap());
-      log('Concept added successfully: ${concept.id}');
+      await conceptsCollection.doc(concept.conceptId).set(concept.toMap());
+      log('Concept added successfully: ${concept.conceptId}');
       return true;
     } catch (e) {
-      log("Error adding concept: $e");
+      log("Error adding concept: ${e.toString()}");
       return false;
     }
   }
 
   Future<bool> updateConcept(Concept concept) async {
     try {
-      await conceptsCollection.doc(concept.id).update(concept.toMap());
-      log('Concept updated successfully: ${concept.id}');
+      await conceptsCollection.doc(concept.conceptId).update(concept.toMap());
+      log('Concept updated successfully: ${concept.conceptId}');
       return true;
     } catch (e) {
       log("Error updating concept: $e");
@@ -42,7 +42,7 @@ class ConceptsCollection {
       log('Concept deleted successfully: $conceptId');
       return true;
     } catch (e) {
-      log("Error deleting concept: $e");
+      log("Error deleting concept: ${e.toString()}");
       return false;
     }
   }
@@ -56,7 +56,7 @@ class ConceptsCollection {
       log('Concept not found: $conceptId');
       return null;
     } catch (e) {
-      log("Error getting concept: $e");
+      log("Error getting concept: ${e.toString()}");
       return null;
     }
   }
@@ -81,7 +81,7 @@ class ConceptsCollection {
     List<Concept> concepts = [];
     try {
       QuerySnapshot snapshot =
-          await conceptsCollection.where('grade', isEqualTo: grade).get();
+          await conceptsCollection.where('grade_level', isEqualTo: grade).get();
       for (var doc in snapshot.docs) {
         concepts.add(Concept.fromMap(doc.data() as Map<String, dynamic>));
       }

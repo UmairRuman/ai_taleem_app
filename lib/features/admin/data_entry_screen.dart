@@ -1,36 +1,29 @@
 // Path: lib/features/admin/data_entry_screen.dart
-// Note: This is a simple UI screen for pushing the provided data to Firebase. You can add it to your app's routes or main.
-// For MVP, data is hardcoded based on the provided JSON. You can edit the _conceptsData list to change info.
-// Click the button to push all concepts to Firebase using the repository.
-
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taleem_ai/core/di/injection_container.dart';
 import 'package:taleem_ai/core/domain/entities/concept.dart';
-import 'package:taleem_ai/core/domain/entities/quiz.dart'; // For Question
+import 'package:taleem_ai/core/domain/entities/content.dart';
 
 class DataEntryScreen extends ConsumerWidget {
   DataEntryScreen({super.key});
 
-  // Hardcoded data based on the provided JSON. Edit here to change info.
-  // For Urdu, add as needed (e.g., nameUrdu: 'Translated Name').
-  // Defaults: difficulty 'easy', estimatedTimeMinutes 30, order from index.
   final List<Concept> _conceptsData = [
     Concept(
-      id: 'G6_CoreDefinition',
-      name: 'What is a Set?',
-      grade: 6,
+      conceptId: 'G6_CoreDefinition',
+      title: 'What is a Set?',
+      gradeLevel: 6,
       topic: 'Sets',
       order: 1,
       prerequisites: [],
-      content: {
-        'introduction':
+      content: Content(
+        introduction:
             'In your daily life, you often group similar things together. For example, you might organize your books on a shelf. In mathematics, we have a special name for a collection that follows three very strict and clear rules. We call it a set.',
-        'definition':
+        definition:
             'A set is a collection of objects that has three key properties: 1. Well-Defined: The rule for membership is perfectly clear. 2. Distinct: Each object in the set is unique. 3. Unordered: The order in which the objects are listed does not matter.',
-        'examples': [
+        examples: [
           {
             'rule': 'Well-Defined',
             'example_is_set': 'The set of fruits in a basket.',
@@ -48,36 +41,36 @@ class DataEntryScreen extends ConsumerWidget {
                 'The set {1, 2, 3} is exactly the same set as {3, 1, 2}.',
           },
         ],
-      },
+        practiceQuiz: [
+          {
+            'question_id': 'G6_Q_WellDefined',
+            'type': 'multiple_choice',
+            'question_text':
+                'Which of the following is NOT a well-defined set?',
+            'options': [
+              'The set of all provinces in Pakistan.',
+              'The set of all difficult math problems.',
+              'The set of all whole numbers less than 10.',
+            ],
+            'correct_answer': 'The set of all difficult math problems.',
+            'feedback':
+                'Correct! \'Difficult\' is an opinion and is not a well-defined rule.',
+          },
+        ],
+      ),
       difficulty: 'easy',
       estimatedTimeMinutes: 30,
-      practiceQuizzes: [
-        Question(
-          id: 'G6_Q_WellDefined',
-          text: 'Which of the following is NOT a well-defined set?',
-          type: 'multiple_choice',
-          options: [
-            'The set of all provinces in Pakistan.',
-            'The set of all difficult math problems.',
-            'The set of all whole numbers less than 10.',
-          ],
-          correctAnswer: 'The set of all difficult math problems.',
-          explanation:
-              'Correct! \'Difficult\' is an opinion and is not a well-defined rule.',
-          points: 1,
-        ),
-      ],
     ),
     Concept(
-      id: 'G6_Notation',
-      name: 'How to Write and Describe Sets',
-      grade: 6,
+      conceptId: 'G6_Notation',
+      title: 'How to Write and Describe Sets',
+      gradeLevel: 6,
       topic: 'Sets',
       order: 2,
       prerequisites: ['G6_CoreDefinition'],
-      content: {
-        'introduction': 'There are three common ways to describe a set.',
-        'forms': [
+      content: Content(
+        introduction: 'There are three common ways to describe a set.',
+        forms: [
           {
             'name': 'Tabular Form (Roster Form)',
             'description':
@@ -94,36 +87,34 @@ class DataEntryScreen extends ConsumerWidget {
                 'Using a rule to define membership. Example: A = {x | x is a positive whole number and x ≤ 5}.',
           },
         ],
-        'membership_symbols':
+        membershipSymbols:
             'We use ∈ to mean \'is an element of\' and ∉ to mean \'is not an element of\'.',
-      },
+        practiceQuiz: [
+          {
+            'question_id': 'G6_Q_Translate',
+            'type': 'fill_in_the_blank',
+            'question_text':
+                'Write the set E = {Set of natural numbers between 6 and 11} in Tabular Form.',
+            'correct_answer': '{7, 8, 9, 10}',
+            'feedback':
+                'Correct! Natural numbers are counting numbers, and \'between\' does not include the endpoints.',
+          },
+        ],
+      ),
       difficulty: 'easy',
       estimatedTimeMinutes: 30,
-      practiceQuizzes: [
-        Question(
-          id: 'G6_Q_Translate',
-          text:
-              'Write the set E = {Set of natural numbers between 6 and 11} in Tabular Form.',
-          type: 'fill_in_the_blank',
-          correctAnswer: '{7, 8, 9, 10}',
-          explanation:
-              'Correct! Natural numbers are counting numbers, and \'between\' does not include the endpoints.',
-          points: 1,
-        ),
-      ],
     ),
-    // Add the remaining concepts similarly...
     Concept(
-      id: 'G6_Classification',
-      name: 'Types and Classifications of Sets',
-      grade: 6,
+      conceptId: 'G6_Classification',
+      title: 'Types and Classifications of Sets',
+      gradeLevel: 6,
       topic: 'Sets',
       order: 3,
       prerequisites: ['G6_Notation'],
-      content: {
-        'cardinality':
+      content: Content(
+        cardinality:
             'The number of distinct elements in a set is called its cardinal number, written as n(A). Example: If A = {1, 7, 9}, then n(A) = 3.',
-        'types_by_size': [
+        typesBySize: [
           {
             'name': 'Finite/Infinite Set',
             'description':
@@ -138,7 +129,7 @@ class DataEntryScreen extends ConsumerWidget {
             'description': 'A set with exactly one element. n(A) = 1.',
           },
         ],
-        'comparison': [
+        comparison: [
           {
             'name': 'Equal Sets (=)',
             'description':
@@ -150,56 +141,54 @@ class DataEntryScreen extends ConsumerWidget {
                 'Two sets are equivalent if they have the same number of elements.',
           },
         ],
-      },
+        practiceQuiz: [
+          {
+            'question_id': 'G6_Q_Equivalent',
+            'type': 'multiple_choice',
+            'question_text': 'The sets C = {1, 2, 3} and D = {a, b, c} are...',
+            'options': [
+              'Equal but not equivalent.',
+              'Equivalent but not equal.',
+              'Both equal and equivalent.',
+            ],
+            'correct_answer': 'Equivalent but not equal.',
+            'feedback':
+                'Correct! They have the same number of elements (3) but not the same elements.',
+          },
+        ],
+      ),
       difficulty: 'easy',
       estimatedTimeMinutes: 30,
-      practiceQuizzes: [
-        Question(
-          id: 'G6_Q_Equivalent',
-          text: 'The sets C = {1, 2, 3} and D = {a, b, c} are...',
-          type: 'multiple_choice',
-          options: [
-            'Equal but not equivalent.',
-            'Equivalent but not equal.',
-            'Both equal and equivalent.',
-          ],
-          correctAnswer: 'Equivalent but not equal.',
-          explanation:
-              'Correct! They have the same number of elements (3) but not the same elements.',
-          points: 1,
-        ),
-      ],
     ),
     Concept(
-      id: 'G6_Subsets',
-      name: 'Subsets and the Universal Set',
-      grade: 6,
+      conceptId: 'G6_Subsets',
+      title: 'Subsets and the Universal Set',
+      gradeLevel: 6,
       topic: 'Sets',
       order: 4,
       prerequisites: ['G6_CoreDefinition'],
-      content: {
-        'universal_set':
+      content: Content(
+        universalSet:
             'The Universal Set (U) is the big \'context\' that contains all possible elements for a specific problem.',
-        'subset_superset':
+        subsetSuperset:
             'A set \'A\' is a subset (⊆) of set \'B\' if every element of A is also found in B. This makes \'B\' the superset (⊇).',
-        'proper_improper':
+        properImproper:
             'A proper subset (⊂) is truly smaller than the superset. An improper subset is identical to the superset.',
-      },
+      ),
       difficulty: 'easy',
       estimatedTimeMinutes: 30,
-      practiceQuizzes: [],
     ),
     Concept(
-      id: 'G6_VennDiagrams',
-      name: 'Introduction to Venn Diagrams',
-      grade: 6,
+      conceptId: 'G6_VennDiagrams',
+      title: 'Introduction to Venn Diagrams',
+      gradeLevel: 6,
       topic: 'Sets',
       order: 5,
       prerequisites: ['G6_Subsets'],
-      content: {
-        'introduction':
+      content: Content(
+        introduction:
             'A Venn Diagram is a drawing that shows the relationship between sets. The Universal set is a rectangle, and the sets are circles inside it.',
-        'examples': [
+        examples: [
           {
             'type': 'Disjoint Sets',
             'description':
@@ -211,22 +200,21 @@ class DataEntryScreen extends ConsumerWidget {
                 'To show that B is a subset of A, we draw the circle for B completely inside the circle for A.',
           },
         ],
-      },
+      ),
       difficulty: 'easy',
       estimatedTimeMinutes: 30,
-      practiceQuizzes: [],
     ),
     Concept(
-      id: 'G7_SetOperations',
-      name: 'The Four Basic Operations on Sets',
-      grade: 7,
+      conceptId: 'G7_SetOperations',
+      title: 'The Four Basic Operations on Sets',
+      gradeLevel: 7,
       topic: 'Sets',
       order: 6,
       prerequisites: ['G6_CoreDefinition', 'G6_VennDiagrams'],
-      content: {
-        'introduction':
+      content: Content(
+        introduction:
             'In Grade 6, you mastered the fundamentals of sets. Now, we will use that knowledge to perform operations to combine and compare sets.',
-        'operations': [
+        operations: [
           {
             'name': 'Intersection (∩)',
             'description':
@@ -255,32 +243,32 @@ class DataEntryScreen extends ConsumerWidget {
                 'If U = {1, ..., 5} and A = {1, 2}, then A\' = {3, 4, 5}.',
           },
         ],
-      },
+        practiceQuiz: [
+          {
+            'question_id': 'G7_Q_Ops',
+            'type': 'short_answer',
+            'question_text':
+                'Let A = {a, b, c, d, e} and F = {a, e, i, o, u}. Find A ∩ F.',
+            'correct_answer': '{a, e}',
+            'feedback':
+                'Correct! \'a\' and \'e\' are the only elements found in both sets.',
+          },
+        ],
+      ),
       difficulty: 'medium',
       estimatedTimeMinutes: 45,
-      practiceQuizzes: [
-        Question(
-          id: 'G7_Q_Ops',
-          text: 'Let A = {a, b, c, d, e} and F = {a, e, i, o, u}. Find A ∩ F.',
-          type: 'short_answer',
-          correctAnswer: '{a, e}',
-          explanation:
-              'Correct! \'a\' and \'e\' are the only elements found in both sets.',
-          points: 1,
-        ),
-      ],
     ),
     Concept(
-      id: 'G7_DeMorgansIntro',
-      name: 'Introduction to De Morgan\'s Laws',
-      grade: 7,
+      conceptId: 'G7_DeMorgansIntro',
+      title: 'Introduction to De Morgan\'s Laws',
+      gradeLevel: 7,
       topic: 'Sets',
       order: 7,
       prerequisites: ['G7_SetOperations'],
-      content: {
-        'introduction':
+      content: Content(
+        introduction:
             'Sets follow logical rules. The most famous are De Morgan\'s Laws, which describe the \'opposite\' of unions and intersections.',
-        'laws': [
+        laws: [
           {
             'name': 'De Morgan\'s Law of Union',
             'formula': '(A ∪ B)\' = A\' ∩ B\'',
@@ -294,50 +282,50 @@ class DataEntryScreen extends ConsumerWidget {
                 'Everything that is NOT in (A and B) is the same as Everything that is (NOT in A) OR (NOT in B).',
           },
         ],
-      },
+      ),
       difficulty: 'medium',
       estimatedTimeMinutes: 45,
-      practiceQuizzes: [],
     ),
     Concept(
-      id: 'G8_PowerSet',
-      name: 'The Power Set',
-      grade: 8,
+      conceptId: 'G8_PowerSet',
+      title: 'The Power Set',
+      gradeLevel: 8,
       topic: 'Sets',
       order: 8,
       prerequisites: ['G6_Subsets'],
-      content: {
-        'introduction':
+      content: Content(
+        introduction:
             'The Power Set of a set A, written P(A), is the set of all possible subsets of A.',
-        'example':
+        example:
             'To find the Power Set of A = {1, 2}: First, list all subsets: ∅, {1}, {2}, {1, 2}. Then, P(A) = { ∅, {1}, {2}, {1, 2} }.',
-        'formula':
+        formula:
             'If a set A has \'n\' elements, then its Power Set, P(A), will have 2ⁿ elements.',
-      },
+        practiceQuiz: [
+          {
+            'question_id': 'G8_Q_PowerSet',
+            'type': 'short_answer',
+            'question_text':
+                'Let A = {a, b, c}. Write out the full Power Set, P(A).',
+            'correct_answer':
+                '{∅, {a}, {b}, {c}, {a,b}, {a,c}, {b,c}, {a,b,c}}',
+            'feedback': 'Correct! A set with 3 elements has 2³ = 8 subsets.',
+          },
+        ],
+      ),
       difficulty: 'hard',
       estimatedTimeMinutes: 60,
-      practiceQuizzes: [
-        Question(
-          id: 'G8_Q_PowerSet',
-          text: 'Let A = {a, b, c}. Write out the full Power Set, P(A).',
-          type: 'short_answer',
-          correctAnswer: '{∅, {a}, {b}, {c}, {a,b}, {a,c}, {b,c}, {a,b,c}}',
-          explanation: 'Correct! A set with 3 elements has 2³ = 8 subsets.',
-          points: 1,
-        ),
-      ],
     ),
     Concept(
-      id: 'G8_SetProperties',
-      name: 'Properties of Set Operations',
-      grade: 8,
+      conceptId: 'G8_SetProperties',
+      title: 'Properties of Set Operations',
+      gradeLevel: 8,
       topic: 'Sets',
       order: 9,
       prerequisites: ['G7_SetOperations'],
-      content: {
-        'introduction':
+      content: Content(
+        introduction:
             'Set operations follow logical rules, just like regular arithmetic.',
-        'properties': [
+        properties: [
           {
             'name': 'Commutative Property',
             'description':
@@ -354,41 +342,42 @@ class DataEntryScreen extends ConsumerWidget {
                 'This property connects Union and Intersection. A ∩ (B ∪ C) = (A ∩ B) ∪ (A ∩ C).',
           },
         ],
-      },
+      ),
       difficulty: 'hard',
       estimatedTimeMinutes: 60,
-      practiceQuizzes: [],
     ),
     Concept(
-      id: 'G8_WordProblems',
-      name: 'Applying Set Theory to Real-World Problems',
-      grade: 8,
+      conceptId: 'G8_WordProblems',
+      title: 'Applying Set Theory to Real-World Problems',
+      gradeLevel: 8,
       topic: 'Sets',
       order: 10,
       prerequisites: ['G7_SetOperations', 'G8_SetProperties'],
-      content: {
-        'introduction':
+      content: Content(
+        introduction:
             'We can use our knowledge of set operations, especially the Principle of Inclusion-Exclusion, to solve practical problems.',
-        'formula': 'n(A ∪ B) = n(A) + n(B) - n(A ∩ B)',
-        'example':
+        formula: 'n(A ∪ B) = n(A) + n(B) - n(A ∩ B)',
+        example:
             'In a class of 50 students, 22 have pencils, 32 have pens, and 8 have both. How many have neither? Solution: n(Pencils ∪ Pens) = 22 + 32 - 8 = 46. The number who have neither is the complement: n(U) - 46 = 50 - 46 = 4.',
-      },
+      ),
       difficulty: 'hard',
       estimatedTimeMinutes: 60,
-      practiceQuizzes: [],
     ),
   ];
 
   Future<void> _pushData(WidgetRef ref) async {
     final repo = ref.read(conceptsRepositoryProvider);
     for (var concept in _conceptsData) {
-      final success = await repo.addConcept(concept);
-      if (!success) {
-        // Handle error, e.g., show snackbar
-        log('Failed to add concept: ${concept.id}');
+      try {
+        final success = await repo.addConcept(concept);
+        if (!success) {
+          log('Failed to add concept: ${concept.conceptId}');
+        }
+      } catch (e) {
+        log('Error adding concept: $e');
+        log('Failed to add concept: ${concept.conceptId}');
       }
     }
-    // Show success message
     log('All concepts pushed to Firebase');
   }
 

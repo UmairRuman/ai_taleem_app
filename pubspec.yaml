@@ -94,6 +94,7 @@ dependencies:
   # Splash Screen
   flutter_native_splash: ^2.4.1
   firebase_core: ^4.1.1
+  confetti: ^0.8.0
 
 dev_dependencies:
   flutter_test:
