@@ -220,7 +220,12 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
           color: Colors.white.withOpacity(0.2),
           borderRadius: BorderRadius.circular(AppDimensions.radiusL),
           child: InkWell(
-            onTap: () => context.pop(),
+            onTap: () {
+              ref
+                  .read(conceptsProvider.notifier)
+                  .getConceptsByGrade(concept.gradeLevel);
+              context.pop();
+            },
             borderRadius: BorderRadius.circular(AppDimensions.radiusL),
             child: Icon(
               Icons.arrow_back_rounded,

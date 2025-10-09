@@ -32,7 +32,7 @@ class GradeFilterWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 80.h,
+      height: 100.h,
       padding: EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
       child: Row(
         children:

@@ -227,7 +227,7 @@ class _CourseContentListScreenState
             color: Colors.transparent,
             child: InkWell(
               onTap: () {
-                // TODO: Implement search
+                context.push(RouteNames.courseSearchScreen);
               },
               borderRadius: BorderRadius.circular(AppDimensions.radiusL),
               child: Container(

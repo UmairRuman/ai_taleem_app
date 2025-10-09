@@ -14,6 +14,7 @@ class RouteNames {
   static const String courseContentListScreen = '/course-content';
   static const String conceptDetailScreen = '/concept-detail';
   static const String conceptQuizScreen = '/concept-quiz';
+  static const String courseSearchScreen = '/course-search';
   // Fake Data entry Screens for Admin
   static const String fakeInstitutionDataEntrySc =
       "/fake-institution-data-entry";

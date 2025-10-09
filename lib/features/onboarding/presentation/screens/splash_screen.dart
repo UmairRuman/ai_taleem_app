@@ -83,7 +83,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 
   Future<void> _navigateToNext() async {
-    await Future.delayed(const Duration(seconds: 5));
+    await Future.delayed(const Duration(seconds: 3));
 
     if (!mounted) return;
 
@@ -145,6 +145,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           // const Spacer(flex: 2),
+                          SizedBox(height: AppDimensions.spaceXL),
 
                           // Animated Logo with Ripple Effect
                           _buildAnimatedLogo(),
@@ -224,6 +225,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                           ),
 
                           // const Spacer(flex: 2),
+                          SizedBox(height: AppDimensions.spaceXXL),
 
                           // Government Badge
                           FadeTransition(

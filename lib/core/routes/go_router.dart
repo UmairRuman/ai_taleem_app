@@ -1,14 +1,13 @@
 // lib/core/routes/app_router.dart
 import 'package:go_router/go_router.dart';
 import 'package:taleem_ai/features/admin/data_entry_screen.dart';
-import 'package:taleem_ai/features/admin/fake_data_entry/institution_data_entry_screen.dart';
 import 'package:taleem_ai/features/admin/fake_data_entry/recommendation_data_entry_screen.dart';
-import 'package:taleem_ai/features/admin/fake_data_entry/user_data_entry_screen.dart';
 import 'package:taleem_ai/features/auth/presentation/screens/email_verification_screen.dart';
 import 'package:taleem_ai/features/auth/presentation/screens/forgot_pass_screen.dart';
 import 'package:taleem_ai/features/learning/presentation/screens/concept_detail_screen.dart';
 import 'package:taleem_ai/features/learning/presentation/screens/concept_quiz_screen.dart';
 import 'package:taleem_ai/features/learning/presentation/screens/course_content_list_screen.dart';
+import 'package:taleem_ai/features/learning/presentation/screens/course_search_screen.dart';
 
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
@@ -18,7 +17,7 @@ import '../../features/onboarding/presentation/screens/splash_screen.dart';
 import 'route_names.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: RouteNames.courseContentListScreen,
+  initialLocation: RouteNames.fakeUserDataEntrySc,
   routes: [
     GoRoute(
       path: RouteNames.splash,
@@ -57,6 +56,7 @@ final GoRouter appRouter = GoRouter(
           (context, state) =>
               EmailVerificationScreen(email: "programmerumair29@gmail.com"),
     ),
+
     // Real Content Entry Screen
     GoRoute(
       path: RouteNames.realContentEntry,
@@ -64,18 +64,23 @@ final GoRouter appRouter = GoRouter(
     ),
 
     // Fake Data Entry Screens for Admin
-    GoRoute(
-      path: RouteNames.fakeInstitutionDataEntrySc,
+    // GoRoute(
+    //   path: RouteNames.fakeInstitutionDataEntrySc,
 
-      builder: (context, state) => const InstitutionDataEntryScreen(),
-    ),
+    //   builder: (context, state) => const InstitutionDataEntryScreen(),
+    // ),
     GoRoute(
       path: RouteNames.fakeRecomendationDataEntrySc,
       builder: (context, state) => const RecommendationDataEntryScreen(),
     ),
+    // GoRoute(
+    //   path: RouteNames.fakeUserDataEntrySc,
+    //   builder: (context, state) => const UserDataEntryScreen(),
+    // ),
     GoRoute(
-      path: RouteNames.fakeUserDataEntrySc,
-      builder: (context, state) => const UserDataEntryScreen(),
+      path: RouteNames.courseSearchScreen,
+      name: 'courseSearch',
+      builder: (context, state) => const CourseSearchScreen(),
     ),
 
     // Content Screens

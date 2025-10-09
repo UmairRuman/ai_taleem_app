@@ -111,24 +111,25 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Future<void> _handleLogin() async {
-    if (!_formKey.currentState!.validate()) return;
+    // if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isLoading = true);
+    // setState(() => _isLoading = true);
 
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 2));
+    // // Simulate API call
+    // await Future.delayed(const Duration(seconds: 2));
 
-    if (!mounted) return;
+    // if (!mounted) return;
 
-    setState(() => _isLoading = false);
+    // setState(() => _isLoading = false);
 
-    if (widget.role == 'teacher') {
-      context.go(RouteNames.teacherDashboard);
-    } else if (widget.role == 'parent') {
-      context.go('/parent/dashboard');
-    } else {
-      context.go(RouteNames.home);
-    }
+    // if (widget.role == 'teacher') {
+    //   context.go(RouteNames.teacherDashboard);
+    // } else if (widget.role == 'parent') {
+    //   context.go('/parent/dashboard');
+    // } else {
+    //   context.go(RouteNames.home);
+    // }
+    context.go(RouteNames.courseContentListScreen);
   }
 
   @override
