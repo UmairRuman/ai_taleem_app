@@ -122,14 +122,13 @@ class _LoginScreenState extends State<LoginScreen>
 
     // setState(() => _isLoading = false);
 
-    // if (widget.role == 'teacher') {
-    //   context.go(RouteNames.teacherDashboard);
-    // } else if (widget.role == 'parent') {
-    //   context.go('/parent/dashboard');
-    // } else {
-    //   context.go(RouteNames.home);
-    // }
-    context.go(RouteNames.courseContentListScreen);
+    if (widget.role == 'teacher') {
+      context.push(RouteNames.studentDashboard);
+    } else if (widget.role == 'parent') {
+      context.push(RouteNames.studentDashboard);
+    } else {
+      context.push(RouteNames.courseContentListScreen);
+    }
   }
 
   @override

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:taleem_ai/core/routes/route_names.dart';
+import 'package:taleem_ai/features/learning/presentation/screens/urdu_translation_screen.dart';
 import 'package:taleem_ai/features/learning/presentation/widgets/content_section_widget.dart';
 import 'package:taleem_ai/features/onboarding/presentation/providers/concepts_provider.dart';
 
@@ -102,6 +103,93 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
     }
   }
 
+  void _navigateToUrduTranslation(Concept concept, Color gradeColor) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => UrduTranslationScreen(
+              conceptTitle: concept.title,
+              gradeColor: gradeColor,
+            ),
+      ),
+    );
+  }
+
+  void _showComingSoonDialog(String feature, IconData icon, Color color) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppDimensions.radiusXXL),
+            ),
+            child: Container(
+              padding: EdgeInsets.all(AppDimensions.paddingXL),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(AppDimensions.radiusXXL),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(AppDimensions.paddingL),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          color.withOpacity(0.2),
+                          color.withOpacity(0.1),
+                        ],
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(icon, size: 48.w, color: color),
+                  ),
+                  SizedBox(height: AppDimensions.spaceL),
+                  Text(
+                    'Coming Soon!',
+                    style: AppTextStyles.h4(color: AppColors.textPrimary),
+                  ),
+                  SizedBox(height: AppDimensions.spaceM),
+                  Text(
+                    '$feature feature will be available in the next version. Stay tuned for exciting updates!',
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.bodyMedium(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  SizedBox(height: AppDimensions.spaceXL),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: color,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(
+                          vertical: AppDimensions.paddingM,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusL,
+                          ),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        'Got it',
+                        style: AppTextStyles.button(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final conceptState = ref.watch(conceptsProvider);
@@ -153,6 +241,9 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
                       // Hero section
                       _buildHeroSection(concept, gradeColor),
 
+                      // Quick Action Cards (Translation & Tutorial)
+                      _buildQuickActionCards(concept, gradeColor),
+
                       // Content sections
                       ContentSectionWidget(
                         concept: concept,
@@ -173,6 +264,155 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActionCards(Concept concept, Color gradeColor) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
+      child: Column(
+        children: [
+          SizedBox(height: AppDimensions.spaceL),
+
+          // Translation and Tutorial Cards
+          Row(
+            children: [
+              // Translate to Urdu Card
+              Expanded(
+                child: _buildActionCard(
+                  icon: Icons.translate_rounded,
+                  title: 'اردو میں',
+                  subtitle: 'Translate to Urdu',
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.success.withOpacity(0.8),
+                      AppColors.success.withOpacity(0.6),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  onTap: () => _navigateToUrduTranslation(concept, gradeColor),
+                ),
+              ),
+
+              SizedBox(width: AppDimensions.spaceM),
+
+              // Video Tutorial Card
+              Expanded(
+                child: _buildActionCard(
+                  icon: Icons.play_circle_filled_rounded,
+                  title: 'Tutorial',
+                  subtitle: 'Watch Video',
+                  gradient: LinearGradient(
+                    colors: [
+                      gradeColor.withOpacity(0.8),
+                      gradeColor.withOpacity(0.6),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  onTap:
+                      () => _showComingSoonDialog(
+                        'Video Tutorial',
+                        Icons.play_circle_filled_rounded,
+                        gradeColor,
+                      ),
+                ),
+              ),
+            ],
+          ),
+
+          SizedBox(height: AppDimensions.spaceL),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Gradient gradient,
+    required VoidCallback onTap,
+  }) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.0, end: 1.0),
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeOutCubic,
+      builder: (context, value, child) {
+        return Transform.scale(
+          scale: 0.8 + (0.2 * value),
+          child: Opacity(opacity: value, child: child),
+        );
+      },
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+          child: Container(
+            padding: EdgeInsets.all(AppDimensions.paddingM),
+            decoration: BoxDecoration(
+              gradient: gradient,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+              boxShadow: [
+                BoxShadow(
+                  color: gradient.colors.first.withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(AppDimensions.paddingM),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, color: Colors.white, size: 32.w),
+                ),
+                SizedBox(height: AppDimensions.spaceM),
+                Text(
+                  title,
+                  style: AppTextStyles.h5(color: Colors.white),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: AppDimensions.spaceXS),
+                Text(
+                  subtitle,
+                  style: AppTextStyles.caption(
+                    color: Colors.white.withOpacity(0.9),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: AppDimensions.spaceS),
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppDimensions.paddingS,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                  ),
+                  child: Text(
+                    'SOON',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 9.sp,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

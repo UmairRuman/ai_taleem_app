@@ -94,7 +94,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     if (isFirstLaunch) {
       context.go(RouteNames.onboarding);
     } else if (authToken == null || authToken.isEmpty) {
-      context.go(RouteNames.roleSelection);
+      context.go(RouteNames.onboarding);
     } else {
       context.go(RouteNames.home);
     }

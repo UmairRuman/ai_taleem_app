@@ -32,6 +32,7 @@ class _QuizQuestionWidgetState extends State<QuizQuestionWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _feedbackController;
   bool _showFeedback = false;
+  final TextEditingController _textController = TextEditingController();
 
   @override
   void initState() {
@@ -45,6 +46,7 @@ class _QuizQuestionWidgetState extends State<QuizQuestionWidget>
   @override
   void dispose() {
     _feedbackController.dispose();
+    _textController.dispose();
     super.dispose();
   }
 
@@ -54,6 +56,84 @@ class _QuizQuestionWidgetState extends State<QuizQuestionWidget>
       _showFeedback = true;
     });
     _feedbackController.forward();
+  }
+
+  void _showComingSoonDialog() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppDimensions.radiusXXL),
+            ),
+            child: Container(
+              padding: EdgeInsets.all(AppDimensions.paddingXL),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(AppDimensions.radiusXXL),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(AppDimensions.paddingL),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          widget.gradeColor.withOpacity(0.2),
+                          widget.gradeColor.withOpacity(0.1),
+                        ],
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.rocket_launch_rounded,
+                      size: 48.w,
+                      color: widget.gradeColor,
+                    ),
+                  ),
+                  SizedBox(height: AppDimensions.spaceL),
+                  Text(
+                    'Coming Soon!',
+                    style: AppTextStyles.h4(color: AppColors.textPrimary),
+                  ),
+                  SizedBox(height: AppDimensions.spaceM),
+                  Text(
+                    'File upload feature will be available in the next version. Stay tuned for exciting updates!',
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.bodyMedium(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  SizedBox(height: AppDimensions.spaceXL),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: widget.gradeColor,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(
+                          vertical: AppDimensions.paddingM,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusL,
+                          ),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        'Got it',
+                        style: AppTextStyles.button(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+    );
   }
 
   @override
@@ -88,38 +168,146 @@ class _QuizQuestionWidgetState extends State<QuizQuestionWidget>
   }
 
   Widget _buildShortAnswer() {
-    return Container(
-      padding: EdgeInsets.all(AppDimensions.paddingL),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: TextField(
-        decoration: InputDecoration(
-          hintText: 'Write your answer...',
-          hintStyle: AppTextStyles.bodyMedium(color: AppColors.textTertiary),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusL),
-            borderSide: BorderSide(color: AppColors.border),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          padding: EdgeInsets.all(AppDimensions.paddingL),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+            border: Border.all(color: AppColors.border),
           ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusL),
-            borderSide: BorderSide(color: AppColors.border),
+          child: TextField(
+            controller: _textController,
+            decoration: InputDecoration(
+              hintText: 'Write your answer here...',
+              hintStyle: AppTextStyles.bodyMedium(
+                color: AppColors.textTertiary,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+                borderSide: BorderSide(color: AppColors.border),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+                borderSide: BorderSide(color: AppColors.border),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+                borderSide: BorderSide(color: widget.gradeColor, width: 2),
+              ),
+              filled: true,
+              fillColor: AppColors.surface,
+              contentPadding: EdgeInsets.all(AppDimensions.paddingM),
+            ),
+            onChanged: (value) => _selectAnswer(value),
+            style: AppTextStyles.bodyLarge(),
+            maxLines: 6,
+            minLines: 4,
+            textInputAction: TextInputAction.newline,
           ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusL),
-            borderSide: BorderSide(color: widget.gradeColor, width: 2),
-          ),
-          filled: true,
-          fillColor: AppColors.surface,
-          contentPadding: EdgeInsets.all(AppDimensions.paddingM),
         ),
-        onChanged: (value) => _selectAnswer(value),
-        style: AppTextStyles.bodyLarge(),
-        maxLines: 4,
-        textInputAction: TextInputAction.done,
-      ),
+
+        SizedBox(height: AppDimensions.spaceL),
+
+        // Upload Answer Button
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [widget.gradeColor, widget.gradeColor.withOpacity(0.8)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+            boxShadow: [
+              BoxShadow(
+                color: widget.gradeColor.withOpacity(0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: _showComingSoonDialog,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  vertical: AppDimensions.paddingM + 4,
+                  horizontal: AppDimensions.paddingL,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(AppDimensions.paddingS),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.cloud_upload_rounded,
+                        color: Colors.white,
+                        size: 22.w,
+                      ),
+                    ),
+                    SizedBox(width: AppDimensions.spaceM),
+                    Text(
+                      'Upload Answer',
+                      style: AppTextStyles.button(
+                        color: Colors.white,
+                      ).copyWith(fontSize: 16.sp, fontWeight: FontWeight.w600),
+                    ),
+                    SizedBox(width: AppDimensions.spaceS),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppDimensions.paddingS,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radiusM,
+                        ),
+                      ),
+                      child: Text(
+                        'BETA',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        SizedBox(height: AppDimensions.spaceM),
+
+        // Helper text
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.info_outline_rounded,
+              size: 16.w,
+              color: AppColors.textTertiary,
+            ),
+            SizedBox(width: AppDimensions.spaceS),
+            Text(
+              'Supported formats: PDF, DOC, DOCX, Images',
+              style: AppTextStyles.caption(color: AppColors.textTertiary),
+            ),
+          ],
+        ),
+      ],
     );
   }
 

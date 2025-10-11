@@ -4,6 +4,7 @@ import 'package:taleem_ai/features/admin/data_entry_screen.dart';
 import 'package:taleem_ai/features/admin/fake_data_entry/recommendation_data_entry_screen.dart';
 import 'package:taleem_ai/features/auth/presentation/screens/email_verification_screen.dart';
 import 'package:taleem_ai/features/auth/presentation/screens/forgot_pass_screen.dart';
+import 'package:taleem_ai/features/guardian/presentation/screens/student_dashboard_screen.dart';
 import 'package:taleem_ai/features/learning/presentation/screens/concept_detail_screen.dart';
 import 'package:taleem_ai/features/learning/presentation/screens/concept_quiz_screen.dart';
 import 'package:taleem_ai/features/learning/presentation/screens/course_content_list_screen.dart';
@@ -17,7 +18,7 @@ import '../../features/onboarding/presentation/screens/splash_screen.dart';
 import 'route_names.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: RouteNames.fakeUserDataEntrySc,
+  initialLocation: RouteNames.splash,
   routes: [
     GoRoute(
       path: RouteNames.splash,
@@ -57,6 +58,11 @@ final GoRouter appRouter = GoRouter(
               EmailVerificationScreen(email: "programmerumair29@gmail.com"),
     ),
 
+    // Add this route:
+    GoRoute(
+      path: RouteNames.studentDashboard,
+      builder: (context, state) => const StudentDashboardScreen(),
+    ),
     // Real Content Entry Screen
     GoRoute(
       path: RouteNames.realContentEntry,

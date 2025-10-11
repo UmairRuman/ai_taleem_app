@@ -10,6 +10,8 @@ class RouteNames {
   static const String realContentEntry = '/data-entry';
   static const String emailVerification = "/email-verification";
 
+  // ... existing routes
+  static const String studentDashboard = '/student/dashboard';
   //Content screens
   static const String courseContentListScreen = '/course-content';
   static const String conceptDetailScreen = '/concept-detail';
