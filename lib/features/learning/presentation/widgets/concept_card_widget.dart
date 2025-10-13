@@ -162,7 +162,7 @@ class _ConceptCardWidgetState extends State<ConceptCardWidget>
                   ),
                   child: Center(
                     child: Text(
-                      '${widget.concept.order}',
+                      '${widget.concept.sequenceOrder}',
                       style: AppTextStyles.h4(color: Colors.white),
                     ),
                   ),

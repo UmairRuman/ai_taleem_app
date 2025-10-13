@@ -1,14 +1,12 @@
 // lib/features/learning/presentation/screens/concept_quiz_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:taleem_ai/core/domain/entities/quiz.dart';
 import 'package:taleem_ai/features/onboarding/presentation/providers/concepts_provider.dart';
 
 import '../../../../core/domain/entities/concept.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_dimensions.dart';
-import '../../../../core/theme/app_text_styles.dart';
 import '../widgets/quiz_question_widget.dart';
 import '../widgets/quiz_result_widget.dart';
 
@@ -82,13 +80,13 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
     super.dispose();
   }
 
-  void _handleAnswer(String answer, String correctAnswer) {
+  void _handleAnswer(String answer, PracticeQuiz question) {
     setState(() {
       _answers[_currentQuestionIndex] = answer;
     });
 
     // Calculate score
-    if (answer == correctAnswer) {
+    if (answer == question.correctAnswer) {
       _score++;
     }
   }
@@ -157,7 +155,7 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
 
   Widget _buildQuizContent(Concept concept) {
     final gradeColor = _getGradeColor(concept.gradeLevel);
-    final questions = concept.content.practiceQuiz ?? [];
+    final questions = concept.practiceQuiz;
 
     if (questions.isEmpty) {
       return _buildNoQuestions(gradeColor);
@@ -217,10 +215,7 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
                         gradeColor: gradeColor,
                         selectedAnswer: _answers[_currentQuestionIndex],
                         onAnswerSelected:
-                            (answer) => _handleAnswer(
-                              answer,
-                              currentQuestion['correct_answer'] ?? '',
-                            ),
+                            (answer) => _handleAnswer(answer, currentQuestion),
                       ),
                     ),
                   ),
@@ -236,30 +231,34 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
     );
   }
 
-  Widget _buildBackgroundDecorations(Color color) {
+  Widget _buildBackgroundDecorations(Color gradeColor) {
     return Stack(
       children: [
         Positioned(
-          top: -80,
-          right: -80,
+          top: -100,
+          right: -100,
           child: Container(
-            width: 200,
-            height: 200,
+            width: 300,
+            height: 300,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: color.withOpacity(0.1),
+              gradient: RadialGradient(
+                colors: [gradeColor.withOpacity(0.1), Colors.transparent],
+              ),
             ),
           ),
         ),
         Positioned(
-          bottom: -60,
-          left: -60,
+          bottom: -150,
+          left: -150,
           child: Container(
-            width: 180,
-            height: 180,
+            width: 400,
+            height: 400,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: color.withOpacity(0.08),
+              gradient: RadialGradient(
+                colors: [gradeColor.withOpacity(0.05), Colors.transparent],
+              ),
             ),
           ),
         ),
@@ -269,72 +268,28 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
 
   Widget _buildHeader(Concept concept, Color gradeColor, int totalQuestions) {
     return Container(
-      padding: EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(16),
       child: Row(
         children: [
-          // Back button
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => _showExitDialog(context),
-              borderRadius: BorderRadius.circular(AppDimensions.radiusL),
-              child: Container(
-                padding: EdgeInsets.all(AppDimensions.paddingS),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusL),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  Icons.close_rounded,
-                  color: AppColors.textPrimary,
-                  size: 24.w,
-                ),
-              ),
-            ),
+          IconButton(
+            onPressed: () => context.pop(),
+            icon: const Icon(Icons.arrow_back_rounded),
           ),
-
-          SizedBox(width: AppDimensions.spaceM),
-
-          // Title
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Practice Quiz', style: AppTextStyles.h4()),
                 Text(
-                  '${_currentQuestionIndex + 1} of $totalQuestions',
-                  style: AppTextStyles.bodySmall(
-                    color: AppColors.textSecondary,
+                  concept.title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              ],
-            ),
-          ),
-
-          // Score indicator
-          Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppDimensions.paddingM,
-              vertical: AppDimensions.paddingS,
-            ),
-            decoration: BoxDecoration(
-              color: gradeColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(AppDimensions.radiusL),
-              border: Border.all(color: gradeColor.withOpacity(0.3)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.star_rounded, color: gradeColor, size: 20.w),
-                SizedBox(width: AppDimensions.spaceXS),
-                Text('$_score', style: AppTextStyles.h5(color: gradeColor)),
+                Text(
+                  '$totalQuestions Questions',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                ),
               ],
             ),
           ),
@@ -346,97 +301,80 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
   Widget _buildProgressBar(int totalQuestions, Color gradeColor) {
     final progress = (_currentQuestionIndex + 1) / totalQuestions;
 
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
-      height: 8.h,
-      decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-      ),
-      child: AnimatedBuilder(
-        animation: _progressAnimation,
-        builder: (context, child) {
-          return FractionallySizedBox(
-            alignment: Alignment.centerLeft,
-            widthFactor: progress * _progressAnimation.value,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [gradeColor, gradeColor.withOpacity(0.7)],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Question ${_currentQuestionIndex + 1} of $totalQuestions',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
                 ),
-                borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-                boxShadow: [
-                  BoxShadow(
-                    color: gradeColor.withOpacity(0.3),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
               ),
+              Text(
+                '${(progress * 100).toInt()}%',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: gradeColor,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 8,
+              backgroundColor: Colors.grey[200],
+              valueColor: AlwaysStoppedAnimation<Color>(gradeColor),
             ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildNavigationButtons(int totalQuestions, Color gradeColor) {
     final hasAnswer = _answers.containsKey(_currentQuestionIndex);
-    final isLastQuestion = _currentQuestionIndex == totalQuestions - 1;
 
     return Container(
-      padding: EdgeInsets.all(AppDimensions.paddingL),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
+      padding: const EdgeInsets.all(16),
       child: Row(
         children: [
-          // Previous button
           if (_currentQuestionIndex > 0)
             Expanded(
-              child: OutlinedButton.icon(
+              child: OutlinedButton(
                 onPressed: _previousQuestion,
-                icon: Icon(Icons.arrow_back_rounded, size: 20.w),
-                label: Text('Previous'),
                 style: OutlinedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(
-                    vertical: AppDimensions.paddingM,
-                  ),
-                  side: BorderSide(color: gradeColor.withOpacity(0.3)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusL),
-                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  side: BorderSide(color: gradeColor),
                 ),
+                child: const Text('Previous'),
               ),
             ),
-
-          if (_currentQuestionIndex > 0) SizedBox(width: AppDimensions.spaceM),
-
-          // Next/Submit button
+          if (_currentQuestionIndex > 0) const SizedBox(width: 16),
           Expanded(
-            flex: _currentQuestionIndex > 0 ? 1 : 2,
-            child: ElevatedButton.icon(
+            flex: 2,
+            child: ElevatedButton(
               onPressed: hasAnswer ? () => _nextQuestion(totalQuestions) : null,
-              icon: Icon(
-                isLastQuestion
-                    ? Icons.check_rounded
-                    : Icons.arrow_forward_rounded,
-                size: 20.w,
-              ),
-              label: Text(isLastQuestion ? 'Submit' : 'Next'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: gradeColor,
-                disabledBackgroundColor: AppColors.surfaceVariant,
-                padding: EdgeInsets.symmetric(vertical: AppDimensions.paddingM),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                disabledBackgroundColor: Colors.grey[300],
+              ),
+              child: Text(
+                _currentQuestionIndex < totalQuestions - 1
+                    ? 'Next Question'
+                    : 'Finish Quiz',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
@@ -451,15 +389,26 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.quiz_outlined, size: 64.w, color: AppColors.textTertiary),
-          SizedBox(height: AppDimensions.spaceL),
-          Text('No quiz available', style: AppTextStyles.h4()),
-          SizedBox(height: AppDimensions.spaceL),
-          ElevatedButton.icon(
+          Icon(
+            Icons.quiz_rounded,
+            size: 80,
+            color: gradeColor.withOpacity(0.5),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'No questions available',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'This concept doesn\'t have any quiz questions yet',
+            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
             onPressed: () => context.pop(),
-            icon: const Icon(Icons.arrow_back_rounded),
-            label: const Text('Go Back'),
-            style: ElevatedButton.styleFrom(backgroundColor: gradeColor),
+            child: const Text('Go Back'),
           ),
         ],
       ),
@@ -475,44 +424,19 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error_outline_rounded, size: 64.w, color: AppColors.error),
-          SizedBox(height: AppDimensions.spaceL),
-          Text('Failed to load quiz', style: AppTextStyles.h4()),
+          const Icon(Icons.error_outline_rounded, size: 80, color: Colors.red),
+          const SizedBox(height: 16),
+          const Text(
+            'Failed to load quiz',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () => context.pop(),
+            child: const Text('Go Back'),
+          ),
         ],
       ),
-    );
-  }
-
-  void _showExitDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
-            ),
-            title: Text('Exit Quiz?', style: AppTextStyles.h4()),
-            content: Text(
-              'Your progress will be lost. Are you sure you want to exit?',
-              style: AppTextStyles.bodyMedium(),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  context.pop();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.error,
-                ),
-                child: Text('Exit'),
-              ),
-            ],
-          ),
     );
   }
 }

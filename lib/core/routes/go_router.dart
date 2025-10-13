@@ -2,6 +2,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:taleem_ai/features/admin/data_entry_screen.dart';
 import 'package:taleem_ai/features/admin/fake_data_entry/recommendation_data_entry_screen.dart';
+import 'package:taleem_ai/features/admin/presentation/screens/admin_panel_screen.dart';
 import 'package:taleem_ai/features/auth/presentation/screens/email_verification_screen.dart';
 import 'package:taleem_ai/features/auth/presentation/screens/forgot_pass_screen.dart';
 import 'package:taleem_ai/features/guardian/presentation/screens/student_dashboard_screen.dart';
@@ -67,6 +68,11 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RouteNames.realContentEntry,
       builder: (context, state) => DataEntryScreen(),
+    ),
+
+    GoRoute(
+      path: RouteNames.adminPanel,
+      builder: (context, state) => AdminPanelScreen(),
     ),
 
     // Fake Data Entry Screens for Admin

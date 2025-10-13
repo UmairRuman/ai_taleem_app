@@ -14,10 +14,10 @@ class QuizzesCollection {
     return instance;
   }
 
-  Future<bool> addQuiz(Question quiz) async {
+  Future<bool> addQuiz(PracticeQuiz quiz) async {
     try {
-      await quizzesCollection.doc(quiz.id).set(quiz.toMap());
-      log('Quiz added successfully: ${quiz.id}');
+      await quizzesCollection.doc(quiz.questionId).set(quiz.toMap());
+      log('Quiz added successfully: ${quiz.questionId}');
       return true;
     } catch (e) {
       log("Error adding quiz: $e");
@@ -25,10 +25,10 @@ class QuizzesCollection {
     }
   }
 
-  Future<bool> updateQuiz(Question quiz) async {
+  Future<bool> updateQuiz(PracticeQuiz quiz) async {
     try {
-      await quizzesCollection.doc(quiz.id).update(quiz.toMap());
-      log('Quiz updated successfully: ${quiz.id}');
+      await quizzesCollection.doc(quiz.questionId).update(quiz.toMap());
+      log('Quiz updated successfully: ${quiz.questionId}');
       return true;
     } catch (e) {
       log("Error updating quiz: $e");
@@ -47,11 +47,11 @@ class QuizzesCollection {
     }
   }
 
-  Future<Question?> getQuiz(String quizId) async {
+  Future<PracticeQuiz?> getQuiz(String quizId) async {
     try {
       DocumentSnapshot snapshot = await quizzesCollection.doc(quizId).get();
       if (snapshot.exists) {
-        return Question.fromMap(snapshot.data() as Map<String, dynamic>);
+        return PracticeQuiz.fromMap(snapshot.data() as Map<String, dynamic>);
       }
       log('Quiz not found: $quizId');
       return null;
@@ -61,12 +61,12 @@ class QuizzesCollection {
     }
   }
 
-  Future<List<Question>> getAllQuizzes() async {
-    List<Question> quizzes = [];
+  Future<List<PracticeQuiz>> getAllQuizzes() async {
+    List<PracticeQuiz> quizzes = [];
     try {
       QuerySnapshot snapshot = await quizzesCollection.get();
       for (var doc in snapshot.docs) {
-        quizzes.add(Question.fromMap(doc.data() as Map<String, dynamic>));
+        quizzes.add(PracticeQuiz.fromMap(doc.data() as Map<String, dynamic>));
       }
       log('Fetched ${quizzes.length} quizzes');
       return quizzes;
@@ -77,15 +77,15 @@ class QuizzesCollection {
   }
 
   // Additional useful method: Get quizzes by conceptId
-  Future<List<Question>> getQuizzesByConcept(String conceptId) async {
-    List<Question> quizzes = [];
+  Future<List<PracticeQuiz>> getQuizzesByConcept(String conceptId) async {
+    List<PracticeQuiz> quizzes = [];
     try {
       QuerySnapshot snapshot =
           await quizzesCollection
               .where('conceptId', isEqualTo: conceptId)
               .get();
       for (var doc in snapshot.docs) {
-        quizzes.add(Question.fromMap(doc.data() as Map<String, dynamic>));
+        quizzes.add(PracticeQuiz.fromMap(doc.data() as Map<String, dynamic>));
       }
       log('Fetched ${quizzes.length} quizzes for concept $conceptId');
       return quizzes;
@@ -96,13 +96,13 @@ class QuizzesCollection {
   }
 
   // Additional useful method: Get quizzes by lessonId
-  Future<List<Question>> getQuizzesByLesson(String lessonId) async {
-    List<Question> quizzes = [];
+  Future<List<PracticeQuiz>> getQuizzesByLesson(String lessonId) async {
+    List<PracticeQuiz> quizzes = [];
     try {
       QuerySnapshot snapshot =
           await quizzesCollection.where('lessonId', isEqualTo: lessonId).get();
       for (var doc in snapshot.docs) {
-        quizzes.add(Question.fromMap(doc.data() as Map<String, dynamic>));
+        quizzes.add(PracticeQuiz.fromMap(doc.data() as Map<String, dynamic>));
       }
       log('Fetched ${quizzes.length} quizzes for lesson $lessonId');
       return quizzes;

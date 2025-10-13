@@ -42,7 +42,7 @@ class QuizzesStateController extends Notifier<QuizzesStates> {
     }
   }
 
-  Future<void> addQuiz(Question quiz) async {
+  Future<void> addQuiz(PracticeQuiz quiz) async {
     try {
       final repo = ref.read(quizzesRepositoryProvider);
       await repo.addQuiz(quiz);
@@ -53,7 +53,7 @@ class QuizzesStateController extends Notifier<QuizzesStates> {
     }
   }
 
-  Future<void> updateQuiz(Question quiz) async {
+  Future<void> updateQuiz(PracticeQuiz quiz) async {
     try {
       final repo = ref.read(quizzesRepositoryProvider);
       await repo.updateQuiz(quiz);
@@ -107,12 +107,12 @@ class QuizzesInitialState extends QuizzesStates {}
 class QuizzesLoadingState extends QuizzesStates {}
 
 class QuizzesLoadedState extends QuizzesStates {
-  final List<Question> quizzes;
+  final List<PracticeQuiz> quizzes;
   QuizzesLoadedState({required this.quizzes});
 }
 
 class QuizzesSingleLoadedState extends QuizzesStates {
-  final Question quiz;
+  final PracticeQuiz quiz;
   QuizzesSingleLoadedState({required this.quiz});
 }
 

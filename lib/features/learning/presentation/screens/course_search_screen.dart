@@ -126,7 +126,7 @@ class _CourseSearchScreenState extends ConsumerState<CourseSearchScreen>
         if (!aTitle && bTitle) return 1;
 
         // Then by order
-        return a.order.compareTo(b.order);
+        return a.sequenceOrder.compareTo(b.sequenceOrder);
       });
     });
   }

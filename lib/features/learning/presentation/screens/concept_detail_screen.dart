@@ -252,8 +252,7 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
                       SizedBox(height: AppDimensions.spaceXL),
 
                       // Quiz button
-                      if (concept.content.practiceQuiz != null &&
-                          concept.content.practiceQuiz!.isNotEmpty)
+                      if (concept.practiceQuiz.isNotEmpty)
                         _buildQuizButton(concept, gradeColor),
 
                       SizedBox(height: AppDimensions.spaceXXL),

@@ -349,7 +349,7 @@ class _CourseContentListScreenState
 
       // Sort concepts by order
       final sortedConcepts = List<Concept>.from(state.concepts)
-        ..sort((a, b) => a.order.compareTo(b.order));
+        ..sort((a, b) => a.sequenceOrder.compareTo(b.sequenceOrder));
 
       return FadeTransition(
         opacity: _fadeAnimation,

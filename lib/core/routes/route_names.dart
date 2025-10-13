@@ -24,6 +24,9 @@ class RouteNames {
   static const String fakeRecomendationDataEntrySc =
       "/fake-recommendation-data-entry";
 
+  // Admin Panel
+  static const String adminPanel = '/admin-panel';
+
   // Main App - Student
   static const String home = '/home';
   static const String gradeSelection = '/grade-selection';

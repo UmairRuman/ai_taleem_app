@@ -1,13 +1,14 @@
 // lib/features/learning/presentation/widgets/quiz_question_widget.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:taleem_ai/core/domain/entities/quiz.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimensions.dart';
 import '../../../../core/theme/app_text_styles.dart';
 
 class QuizQuestionWidget extends StatefulWidget {
-  final Map<String, dynamic> question;
+  final PracticeQuiz question;
   final int questionNumber;
   final int totalQuestions;
   final Color gradeColor;
@@ -138,7 +139,7 @@ class _QuizQuestionWidgetState extends State<QuizQuestionWidget>
 
   @override
   Widget build(BuildContext context) {
-    final questionType = widget.question['type'] ?? 'multiple_choice';
+    final questionType = widget.question.type;
 
     return SingleChildScrollView(
       padding: EdgeInsets.all(AppDimensions.paddingL),
@@ -353,26 +354,22 @@ class _QuizQuestionWidgetState extends State<QuizQuestionWidget>
             ],
           ),
           SizedBox(height: AppDimensions.spaceL),
-          Text(
-            widget.question['question_text'] ?? '',
-            style: AppTextStyles.h4(),
-          ),
+          Text(widget.question.questionText, style: AppTextStyles.h4()),
         ],
       ),
     );
   }
 
   Widget _buildMultipleChoiceOptions() {
-    final options = widget.question['options'] as List? ?? [];
+    final options = widget.question.options ?? [];
 
     return Column(
       children:
           options.asMap().entries.map((entry) {
             final index = entry.key;
-            final option = entry.value.toString();
+            final option = entry.value;
             final isSelected = widget.selectedAnswer == option;
-            final correctAnswer = widget.question['correct_answer'] ?? '';
-            final isCorrect = option == correctAnswer;
+            final isCorrect = option == widget.question.correctAnswer;
 
             return TweenAnimationBuilder<double>(
               tween: Tween(begin: 0.0, end: 1.0),
@@ -503,9 +500,8 @@ class _QuizQuestionWidgetState extends State<QuizQuestionWidget>
   }
 
   Widget _buildFeedback() {
-    final feedback = widget.question['feedback'] ?? 'Good job!';
-    final isCorrect =
-        widget.selectedAnswer == widget.question['correct_answer'];
+    final feedback = widget.question.feedback;
+    final isCorrect = widget.selectedAnswer == widget.question.correctAnswer;
 
     return FadeTransition(
       opacity: _feedbackController,

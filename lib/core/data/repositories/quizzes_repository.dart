@@ -5,11 +5,11 @@ import 'package:taleem_ai/core/domain/entities/quiz.dart';
 class QuizzesRepository {
   final QuizzesCollection _quizzesCollection = QuizzesCollection.instance;
 
-  Future<bool> addQuiz(Question quiz) async {
+  Future<bool> addQuiz(PracticeQuiz quiz) async {
     return await _quizzesCollection.addQuiz(quiz);
   }
 
-  Future<bool> updateQuiz(Question quiz) async {
+  Future<bool> updateQuiz(PracticeQuiz quiz) async {
     return await _quizzesCollection.updateQuiz(quiz);
   }
 
@@ -17,19 +17,19 @@ class QuizzesRepository {
     return await _quizzesCollection.deleteQuiz(quizId);
   }
 
-  Future<Question?> getQuiz(String quizId) async {
+  Future<PracticeQuiz?> getQuiz(String quizId) async {
     return await _quizzesCollection.getQuiz(quizId);
   }
 
-  Future<List<Question>> getAllQuizzes() async {
+  Future<List<PracticeQuiz>> getAllQuizzes() async {
     return await _quizzesCollection.getAllQuizzes();
   }
 
-  Future<List<Question>> getQuizzesByConcept(String conceptId) async {
+  Future<List<PracticeQuiz>> getQuizzesByConcept(String conceptId) async {
     return await _quizzesCollection.getQuizzesByConcept(conceptId);
   }
 
-  Future<List<Question>> getQuizzesByLesson(String lessonId) async {
+  Future<List<PracticeQuiz>> getQuizzesByLesson(String lessonId) async {
     return await _quizzesCollection.getQuizzesByLesson(lessonId);
   }
 }
