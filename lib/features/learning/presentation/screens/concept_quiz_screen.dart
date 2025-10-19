@@ -1,14 +1,17 @@
 // lib/features/learning/presentation/screens/concept_quiz_screen.dart
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:taleem_ai/core/domain/entities/quiz.dart';
+import 'package:taleem_ai/core/utils/answer_validator.dart';
 import 'package:taleem_ai/features/onboarding/presentation/providers/concepts_provider.dart';
 
 import '../../../../core/domain/entities/concept.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../widgets/quiz_question_widget.dart';
-import '../widgets/quiz_result_widget.dart';
+import 'quiz_result_screen.dart';
 
 class ConceptQuizScreen extends ConsumerStatefulWidget {
   final String conceptId;
@@ -23,7 +26,6 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
     with TickerProviderStateMixin {
   int _currentQuestionIndex = 0;
   Map<int, String> _answers = {};
-  bool _showResults = false;
   int _score = 0;
 
   late AnimationController _progressController;
@@ -85,13 +87,23 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
       _answers[_currentQuestionIndex] = answer;
     });
 
-    // Calculate score
-    if (answer == question.correctAnswer) {
-      _score++;
+    final isCorrect = AnswerValidator.validateAnswer(
+      studentAnswer: answer,
+      correctAnswer: question.correctAnswer,
+      questionType: question.type,
+      caseSensitive: false,
+    );
+
+    if (isCorrect) {
+      setState(() {
+        _score++;
+      });
     }
   }
 
-  void _nextQuestion(int totalQuestions) {
+  void _nextQuestion(Concept concept) {
+    final totalQuestions = concept.practiceQuiz.length;
+
     if (_currentQuestionIndex < totalQuestions - 1) {
       _questionController.reset();
       setState(() {
@@ -99,9 +111,18 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
       });
       _questionController.forward();
     } else {
-      setState(() {
-        _showResults = true;
-      });
+      // Navigate to result screen
+      log("Score: $_score out of $totalQuestions");
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder:
+              (context) => QuizResultScreen(
+                concept: concept,
+                score: _score,
+                totalQuestions: totalQuestions,
+              ),
+        ),
+      );
     }
   }
 
@@ -113,17 +134,6 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
       });
       _questionController.forward();
     }
-  }
-
-  void _retakeQuiz() {
-    setState(() {
-      _currentQuestionIndex = 0;
-      _answers.clear();
-      _score = 0;
-      _showResults = false;
-    });
-    _questionController.reset();
-    _questionController.forward();
   }
 
   Color _getGradeColor(int grade) {
@@ -161,17 +171,6 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
       return _buildNoQuestions(gradeColor);
     }
 
-    if (_showResults) {
-      return QuizResultWidget(
-        concept: concept,
-        score: _score,
-        totalQuestions: questions.length,
-        gradeColor: gradeColor,
-        onRetake: _retakeQuiz,
-        onBack: () => context.pop(),
-      );
-    }
-
     final currentQuestion = questions[_currentQuestionIndex];
 
     return Container(
@@ -189,20 +188,12 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
       ),
       child: Stack(
         children: [
-          // Background decorations
           _buildBackgroundDecorations(gradeColor),
-
-          // Main content
           SafeArea(
             child: Column(
               children: [
-                // Header
                 _buildHeader(concept, gradeColor, questions.length),
-
-                // Progress bar
                 _buildProgressBar(questions.length, gradeColor),
-
-                // Question
                 Expanded(
                   child: SlideTransition(
                     position: _slideAnimation,
@@ -220,9 +211,7 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
                     ),
                   ),
                 ),
-
-                // Navigation buttons
-                _buildNavigationButtons(questions.length, gradeColor),
+                _buildNavigationButtons(concept, gradeColor),
               ],
             ),
           ),
@@ -340,7 +329,7 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
     );
   }
 
-  Widget _buildNavigationButtons(int totalQuestions, Color gradeColor) {
+  Widget _buildNavigationButtons(Concept concept, Color gradeColor) {
     final hasAnswer = _answers.containsKey(_currentQuestionIndex);
 
     return Container(
@@ -362,14 +351,14 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
           Expanded(
             flex: 2,
             child: ElevatedButton(
-              onPressed: hasAnswer ? () => _nextQuestion(totalQuestions) : null,
+              onPressed: hasAnswer ? () => _nextQuestion(concept) : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: gradeColor,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 disabledBackgroundColor: Colors.grey[300],
               ),
               child: Text(
-                _currentQuestionIndex < totalQuestions - 1
+                _currentQuestionIndex < concept.practiceQuiz.length - 1
                     ? 'Next Question'
                     : 'Finish Quiz',
                 style: const TextStyle(

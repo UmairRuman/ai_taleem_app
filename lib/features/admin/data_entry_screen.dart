@@ -395,36 +395,120 @@ class DataEntryScreen extends ConsumerWidget {
       title: 'The Power Set',
       sequenceOrder: 1,
       prerequisites: ['G6_Sets_SubsetsUniversal'],
-      teacherRemediationTip: [
-        TeacherRemediationTip(
-          prerequisiteId: 'G6_Sets_SubsetsUniversal',
-          tip:
-              'The student may be confused about what a subset is. We recommend reviewing the Grade 6 lesson \'Subsets and the Universal Set.\'',
-        ),
-      ],
+      teacherRemediationTip: [],
       definesGlossaryTerms: ['Power Set'],
       content: Content(
         introduction:
-            'The Power Set of a set A, written P(A), is the set of all possible subsets of A. The members of a power set are sets themselves.',
+            'The Power Set of a set A, written P(A), is the set of all possible subsets of A.',
         example:
             'To find the Power Set of A = {1, 2}: First, list all subsets: ∅, {1}, {2}, {1, 2}. Then, P(A) = { ∅, {1}, {2}, {1, 2} }.',
         formula:
             'If a set A has \'n\' elements, then its Power Set, P(A), will have 2ⁿ elements.',
       ),
       images: [],
-      interactiveElements: [],
+
+      // 🎯 INTERACTIVE ELEMENTS - ALL THREE TYPES DEMONSTRATED
+      interactiveElements: [
+        // Type 1: Challenge with Quiz
+        {
+          'element_id': 'G8_Sets_PowerSet_Challenge1',
+          'type': 'Challenge',
+          'title': 'Calculate a Power Set',
+          'content':
+              'Now that you understand the concept, let\'s calculate a power set step by step.',
+          'quiz': {
+            'question_text':
+                'If A = {x, y}, write the complete Power Set P(A) in set notation.',
+            'correct_answer': '{∅, {x}, {y}, {x, y}}',
+            'feedback':
+                'Excellent! Remember: every set has the empty set and itself as subsets.',
+          },
+          'hint':
+              'Start with the empty set ∅, then single elements {x} and {y}, then the complete set.',
+        },
+
+        // Type 1: Challenge with Steps
+        {
+          'element_id': 'G8_Sets_PowerSet_Challenge2',
+          'type': 'Challenge',
+          'title': 'Multi-Step Power Set Challenge',
+          'content':
+              'Let\'s find the power set of a 3-element set using a systematic approach.',
+          'steps': [
+            'Start with A = {1, 2, 3}',
+            'List all subsets with 0 elements: ∅',
+            'List all subsets with 1 element: {1}, {2}, {3}',
+            'List all subsets with 2 elements: {1,2}, {1,3}, {2,3}',
+            'List all subsets with 3 elements: {1,2,3}',
+            'Combine all: P(A) = {∅, {1}, {2}, {3}, {1,2}, {1,3}, {2,3}, {1,2,3}}',
+            'Verify: Count = 8 = 2³ ✓',
+          ],
+          'hint':
+              'Think systematically: start with the smallest subsets and work up to the largest.',
+        },
+
+        // Type 2: Thinking Prompt (Meta-Skill Development)
+        {
+          'element_id': 'G8_Sets_PowerSet_ThinkingPrompt1',
+          'type': 'ThinkingPrompt',
+          'question':
+              'Why do you think the formula for the number of elements in a power set is 2ⁿ? Explain the reasoning behind this exponential relationship.',
+        },
+
+        // Type 2: Another Thinking Prompt
+        {
+          'element_id': 'G8_Sets_PowerSet_ThinkingPrompt2',
+          'type': 'ThinkingPrompt',
+          'question':
+              'Compare the concepts of "subset" and "element of a power set". How are they related? Can you explain why every element of P(A) is a subset of A?',
+        },
+
+        // Type 3: AI Tutor Challenge (AI Literacy)
+        {
+          'element_id': 'G8_Sets_PowerSet_AITutor1',
+          'type': 'AITutorChallenge',
+          'scenario':
+              'You\'re struggling to understand why the power set grows so quickly. Which prompt would help an AI tutor give you the best explanation?',
+          'prompts': {
+            'poor': 'Why is power set big',
+            'good': 'Explain why power sets have 2^n elements',
+            'excellent':
+                'I\'m learning about Power Sets in Grade 8. I understand that if A has 3 elements, P(A) has 8 elements. But I\'m confused about WHY the formula is 2ⁿ instead of something like n². Can you explain the logic behind this exponential growth with a concrete example?',
+          },
+          'explanation':
+              'The excellent prompt is best because it: (1) Provides context about grade level, (2) Shows what you already know (the specific example), (3) Clearly identifies your confusion (why 2ⁿ and not n²), and (4) Requests a specific type of explanation (logic with concrete example). This helps the AI target exactly what you need to understand.',
+        },
+
+        // Type 3: Another AI Tutor Challenge
+        {
+          'element_id': 'G8_Sets_PowerSet_AITutor2',
+          'type': 'AITutorChallenge',
+          'scenario':
+              'You want to check if your answer to a power set problem is correct. Which prompt demonstrates good AI interaction?',
+          'prompts': {
+            'poor': 'Is this right',
+            'good': 'Check my power set answer',
+            'excellent':
+                'I calculated P({a, b, c}) = {∅, {a}, {b}, {c}, {a,b}, {a,c}, {b,c}, {a,b,c}}. I got 8 elements which matches 2³ = 8. Can you verify if I listed all subsets correctly and didn\'t miss any?',
+          },
+          'explanation':
+              'The excellent prompt works best because it: (1) Shows your complete work, (2) Demonstrates you understand the formula (2³ = 8), (3) Asks a specific question (did I list all correctly?), and (4) Shows self-checking behavior. This makes it easy for the AI to verify your answer and provide targeted feedback.',
+        },
+      ],
+
       keySentences: [
         'The Power Set of a set A is the set of all possible subsets of A.',
-        'If a set A has \'n\' elements, then its Power Set, P(A), will have 2ⁿ elements.',
+        'If a set A has \'n\' elements, then its Power Set will have 2ⁿ elements.',
       ],
       practiceQuiz: [
         PracticeQuiz(
-          questionId: 'G8_Q_PowerSet',
+          questionId: 'G8_Q_PowerSet_Basic',
           type: 'short_answer',
           questionText:
-              'Let A = {a, b, c}. Write out the full Power Set, P(A).',
-          correctAnswer: '{∅, {a}, {b}, {c}, {a,b}, {a,c}, {b,c}, {a,b,c}}',
-          feedback: 'Correct! A set with 3 elements has 2³ = 8 subsets.',
+              'Let A = {m, n}. Write out the complete Power Set P(A).',
+          correctAnswer: '{∅, {m}, {n}, {m, n}}',
+          feedback:
+              'Perfect! A 2-element set has 2² = 4 subsets in its power set.',
         ),
       ],
       topic: 'Sets',
@@ -503,7 +587,17 @@ class DataEntryScreen extends ConsumerWidget {
             'In a class of 50 students, 22 have pencils, 32 have pens, and 8 have both. How many have neither? Solution: n(Pencils ∪ Pens) = 22 + 32 - 8 = 46. The number who have neither is the complement: n(U) - 46 = 50 - 46 = 4.',
       ),
       images: [],
-      interactiveElements: [],
+      interactiveElements: [
+        {
+          "element_id": "G8_Sets_DeMorganVisual",
+          "type": "Challenge",
+          "title": "Visualizing De Morgan's Law",
+          "content":
+              "Using a 3-circle Venn Diagram, can you prove that (A ∪ B)' = A' ∩ B' by shading the regions?",
+          "hint":
+              "On one diagram, shade A ∪ B first, then imagine its complement. On a second diagram, shade A' and B' separately, then find where their shadings overlap. Do the final pictures match?",
+        },
+      ],
       keySentences: [
         'The Principle of Inclusion-Exclusion is a key formula for solving word problems: n(A ∪ B) = n(A) + n(B) - n(A ∩ B).',
       ],

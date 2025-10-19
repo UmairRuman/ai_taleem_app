@@ -1,4 +1,6 @@
 // lib/features/learning/presentation/screens/concept_detail_screen.dart
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -6,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:taleem_ai/core/routes/route_names.dart';
 import 'package:taleem_ai/features/learning/presentation/screens/urdu_translation_screen.dart';
 import 'package:taleem_ai/features/learning/presentation/widgets/content_section_widget.dart';
+import 'package:taleem_ai/features/learning/presentation/widgets/interactive_elements_widget.dart';
 import 'package:taleem_ai/features/onboarding/presentation/providers/concepts_provider.dart';
 
 import '../../../../core/domain/entities/concept.dart';
@@ -205,6 +208,7 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
   }
 
   Widget _buildContent(Concept concept) {
+    // log("Interactive elements  ${concept.interactiveElements.toString()}");
     final gradeColor = _getGradeColor(concept.gradeLevel);
 
     return Container(
@@ -250,6 +254,12 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
                         gradeColor: gradeColor,
                       ),
                       SizedBox(height: AppDimensions.spaceXL),
+
+                      // Interactive Elements section
+                      InteractiveElementsWidget(
+                        interactiveElements: concept.interactiveElements,
+                        gradeColor: gradeColor,
+                      ),
 
                       // Quiz button
                       if (concept.practiceQuiz.isNotEmpty)
@@ -460,6 +470,7 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
           borderRadius: BorderRadius.circular(AppDimensions.radiusL),
           child: InkWell(
             onTap: () {
+              log("Grade level: ${concept.gradeLevel}");
               ref
                   .read(conceptsProvider.notifier)
                   .getConceptsByGrade(concept.gradeLevel);

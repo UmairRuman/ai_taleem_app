@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:taleem_ai/core/domain/entities/quiz.dart';
+import 'package:taleem_ai/core/utils/answer_validator.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimensions.dart';
@@ -369,7 +370,14 @@ class _QuizQuestionWidgetState extends State<QuizQuestionWidget>
             final index = entry.key;
             final option = entry.value;
             final isSelected = widget.selectedAnswer == option;
-            final isCorrect = option == widget.question.correctAnswer;
+
+            // ✅ CHANGED: Use smart validator instead of direct comparison
+            final isCorrect = AnswerValidator.validateAnswer(
+              studentAnswer: option,
+              correctAnswer: widget.question.correctAnswer,
+              questionType: widget.question.type,
+              caseSensitive: false,
+            );
 
             return TweenAnimationBuilder<double>(
               tween: Tween(begin: 0.0, end: 1.0),
@@ -501,7 +509,22 @@ class _QuizQuestionWidgetState extends State<QuizQuestionWidget>
 
   Widget _buildFeedback() {
     final feedback = widget.question.feedback;
-    final isCorrect = widget.selectedAnswer == widget.question.correctAnswer;
+
+    // ✅ CHANGED: Use smart validator instead of direct comparison
+    final isCorrect = AnswerValidator.validateAnswer(
+      studentAnswer: widget.selectedAnswer ?? '',
+      correctAnswer: widget.question.correctAnswer,
+      questionType: widget.question.type,
+      caseSensitive: false,
+    );
+
+    // ✅ NEW: Get enhanced feedback message
+    final feedbackTitle = AnswerValidator.getFeedbackMessage(
+      isCorrect: isCorrect,
+      questionType: widget.question.type,
+      correctAnswer: widget.question.correctAnswer,
+      studentAnswer: widget.selectedAnswer,
+    );
 
     return FadeTransition(
       opacity: _feedbackController,
@@ -532,19 +555,25 @@ class _QuizQuestionWidgetState extends State<QuizQuestionWidget>
                   size: 24.w,
                 ),
                 SizedBox(width: AppDimensions.spaceM),
-                Text(
-                  isCorrect ? 'Correct!' : 'Feedback',
-                  style: AppTextStyles.h5(
-                    color: isCorrect ? AppColors.success : AppColors.info,
+                // ✅ CHANGED: Use dynamic feedback title
+                Expanded(
+                  child: Text(
+                    feedbackTitle,
+                    style: AppTextStyles.h5(
+                      color: isCorrect ? AppColors.success : AppColors.info,
+                    ),
                   ),
                 ),
               ],
             ),
-            SizedBox(height: AppDimensions.spaceM),
-            Text(
-              feedback,
-              style: AppTextStyles.bodyMedium(color: AppColors.textPrimary),
-            ),
+            // ✅ NEW: Only show detailed feedback if it exists and is not empty
+            if (feedback.isNotEmpty) ...[
+              SizedBox(height: AppDimensions.spaceM),
+              Text(
+                feedback,
+                style: AppTextStyles.bodyMedium(color: AppColors.textPrimary),
+              ),
+            ],
           ],
         ),
       ),

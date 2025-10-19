@@ -54,7 +54,7 @@ class ContentSectionWidget extends StatelessWidget {
               concept.content.forms!.isNotEmpty)
             _buildSection(
               icon: Icons.text_fields_rounded,
-              title: 'Forms of Representation',
+              title: 'Representation Forms',
               child: _buildForms(concept.content.forms!),
             ),
 

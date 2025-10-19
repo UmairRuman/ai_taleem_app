@@ -119,5 +119,7 @@ final GoRouter appRouter = GoRouter(
         return ConceptQuizScreen(conceptId: conceptId);
       },
     ),
+
+    // Add after the conceptQuiz route
   ],
 );
