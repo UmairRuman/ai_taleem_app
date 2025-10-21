@@ -1,7 +1,11 @@
 // lib/core/routes/app_router.dart
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:taleem_ai/core/domain/entities/institution.dart';
 import 'package:taleem_ai/features/admin/data_entry_screen.dart';
 import 'package:taleem_ai/features/admin/fake_data_entry/recommendation_data_entry_screen.dart';
+import 'package:taleem_ai/features/admin/presentation/pages/institution_detail_page.dart';
+import 'package:taleem_ai/features/admin/presentation/pages/institutions_overview_page.dart';
 import 'package:taleem_ai/features/admin/presentation/screens/admin_panel_screen.dart';
 import 'package:taleem_ai/features/auth/presentation/screens/email_verification_screen.dart';
 import 'package:taleem_ai/features/auth/presentation/screens/forgot_pass_screen.dart';
@@ -19,7 +23,7 @@ import '../../features/onboarding/presentation/screens/splash_screen.dart';
 import 'route_names.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: RouteNames.splash,
+  initialLocation: RouteNames.adminPanel,
   routes: [
     GoRoute(
       path: RouteNames.splash,
@@ -120,6 +124,38 @@ final GoRouter appRouter = GoRouter(
       },
     ),
 
-    // Add after the conceptQuiz route
+    // ADMIN PANEL ROUTES
+    GoRoute(
+      path: RouteNames.adminPanel,
+      builder: (context, state) => AdminPanelScreen(),
+      routes: [
+        // Nested route for Institutions Overview
+        GoRoute(
+          path: 'institutions', // path will be /admin-panel/institutions
+          name: 'institutionsOverview', // Name for easy navigation
+          builder: (context, state) => const InstitutionsOverviewPage(),
+          routes: [
+            // Nested route for Institution Detail
+            GoRoute(
+              path: ':id', // path will be /admin-panel/institutions/:id
+              name: 'institutionDetail', // Name for easy navigation
+              builder: (context, state) {
+                // When navigating using GoRouter, you retrieve the object from `extra` or fetch it from a provider
+                final institution = state.extra as Institution?;
+                if (institution == null) {
+                  // Handle error, e.g., navigate back or show a loading state then fetch by ID
+                  return const Scaffold(
+                    body: Center(child: Text('Institution data not found!')),
+                  );
+                }
+                return InstitutionDetailPage(institution: institution);
+              },
+            ),
+          ],
+        ),
+
+        // Add after the conceptQuiz route
+      ],
+    ),
   ],
 );

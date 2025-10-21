@@ -1,9 +1,14 @@
 // lib/features/learning/presentation/screens/course_content_list_screen.dart
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:taleem_ai/core/di/injection_container.dart';
+import 'package:taleem_ai/core/domain/entities/institution.dart';
 import 'package:taleem_ai/core/routes/route_names.dart';
+import 'package:taleem_ai/features/admin/fake_data_entry/institution_data_entry_screen.dart';
 import 'package:taleem_ai/features/onboarding/presentation/providers/concepts_provider.dart';
 
 import '../../../../core/domain/entities/concept.dart';
@@ -89,6 +94,13 @@ class _CourseContentListScreenState
   @override
   Widget build(BuildContext context) {
     final conceptsState = ref.watch(conceptsProvider);
+    final fakeDataGenerator = FakeDataGenerator();
+    final List<Institution> institutions = fakeDataGenerator
+        .generateFakeInstitutions(5);
+    for (var inst in institutions) {
+      ref.read(institutionRepositoryProvider).addInstitution(inst);
+      log("Institution name : ${inst.name}");
+    }
 
     return Scaffold(
       body: Container(

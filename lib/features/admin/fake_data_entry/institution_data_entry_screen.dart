@@ -1,99 +1,108 @@
-// // Path: lib/features/admin/fake_data_entry/institution_data_entry_screen.dart
-// import 'package:flutter/material.dart';
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:taleem_ai/core/di/injection_container.dart';
-// import 'package:taleem_ai/core/domain/entities/institution.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:faker/faker.dart';
+import 'package:taleem_ai/core/domain/entities/institution.dart';
+// Adjust path as necessary
 
-// class InstitutionDataEntryScreen extends ConsumerStatefulWidget {
-//   const InstitutionDataEntryScreen({super.key});
+class FakeDataGenerator {
+  final Faker _faker = Faker();
 
-//   @override
-//   ConsumerState<InstitutionDataEntryScreen> createState() =>
-//       _InstitutionDataEntryScreenState();
-// }
+  // Generates a list of fake user IDs (teachers, students, parents)
+  List<String> _generateUserIds(String prefix, int count) {
+    return List.generate(
+      count,
+      (index) => '${prefix}_${_faker.randomGenerator.integer(99999)}',
+    );
+  }
 
-// class _InstitutionDataEntryScreenState
-//     extends ConsumerState<InstitutionDataEntryScreen> {
-//   final _formKey = GlobalKey<FormState>();
-//   final _institutionIdController = TextEditingController();
-//   final _nameController = TextEditingController();
-//   final _codeController = TextEditingController();
+  // Generates a single fake Institution
+  Institution generateFakeInstitution({
+    String? id,
+    int minStudents = 5,
+    int maxStudents = 50,
+    int minTeachers = 1,
+    int maxTeachers = 10,
+    int minParents = 5,
+    int maxParents = 70,
+  }) {
+    final String institutionId =
+        id ?? 'inst_${_faker.randomGenerator.integer(1000, min: 1)}';
+    final String ownerId =
+        'teacher_${_faker.randomGenerator.integer(100, min: 1)}';
 
-//   Future<void> _pushInstitutionData() async {
-//     if (_formKey.currentState!.validate()) {
-//       final institution = Institution(
-//         type: "private",
-//         city: "Bahawalpur",
-//         ownerId: "admin1",
-//         createdAt: DateTime.now(),
-//         updatedAt: DateTime.now(),
-//         id: _institutionIdController.text,
-//         name: _nameController.text,
-//         code: _codeController.text,
-//         studentIds: [], // Empty for fake data, add later if needed
-//       );
-//       final repo = ref.read(institutionsRepositoryProvider);
-//       final success = await repo.addInstitution(institution);
-//       if (success) {
-//         ScaffoldMessenger.of(context).showSnackBar(
-//           const SnackBar(content: Text('Institution added successfully')),
-//         );
-//       } else {
-//         ScaffoldMessenger.of(context).showSnackBar(
-//           const SnackBar(content: Text('Failed to add institution')),
-//         );
-//       }
-//     }
-//   }
+    final int numStudents = _faker.randomGenerator.integer(
+      maxStudents,
+      min: minStudents,
+    );
+    final int numTeachers = _faker.randomGenerator.integer(
+      maxTeachers,
+      min: minTeachers,
+    );
+    final int numParents = _faker.randomGenerator.integer(
+      maxParents,
+      min: minParents,
+    );
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: const Text('Fake Institution Data Entry')),
-//       body: Padding(
-//         padding: const EdgeInsets.all(16.0),
-//         child: Form(
-//           key: _formKey,
-//           child: Column(
-//             children: [
-//               TextFormField(
-//                 controller: _institutionIdController,
-//                 decoration: const InputDecoration(labelText: 'Institution ID'),
-//                 validator:
-//                     (value) => value!.isEmpty ? 'Enter Institution ID' : null,
-//               ),
-//               TextFormField(
-//                 controller: _nameController,
-//                 decoration: const InputDecoration(
-//                   labelText: 'Institution Name',
-//                 ),
-//                 validator:
-//                     (value) => value!.isEmpty ? 'Enter Institution Name' : null,
-//               ),
-//               TextFormField(
-//                 controller: _codeController,
-//                 decoration: const InputDecoration(
-//                   labelText: 'Institution Code',
-//                 ),
-//                 validator:
-//                     (value) => value!.isEmpty ? 'Enter Institution Code' : null,
-//               ),
-//               ElevatedButton(
-//                 onPressed: _pushInstitutionData,
-//                 child: const Text('Add Fake Institution'),
-//               ),
-//             ],
-//           ),
-//         ),a
-//       ),
-//     );
-//   }
+    final List<String> studentIds = _generateUserIds('student', numStudents);
+    final List<String> teacherIds = _generateUserIds('teacher', numTeachers);
+    final List<String> parentIds = _generateUserIds('parent', numParents);
 
-//   @override
-//   void dispose() {
-//     _institutionIdController.dispose();
-//     _nameController.dispose();
-//     _codeController.dispose();
-//     super.dispose();
-//   }
-// }
+    final DateTime createdAt = DateTime.now();
+    final DateTime updatedAt = createdAt.add(
+      Duration(days: _faker.randomGenerator.integer(300)),
+    );
+
+    return Institution(
+      id: institutionId,
+      name: '${_faker.company.name()} School',
+      code: _faker.randomGenerator.string(6, min: 6).toUpperCase(),
+      type: _faker.randomGenerator.element(['school', 'private', 'homeschool']),
+      city: _faker.address.city(),
+      address: _faker.address.streetAddress(),
+      province: _faker.randomGenerator.element([
+        'Punjab',
+        'Sindh',
+        'Khyber Pakhtunkhwa',
+        'Balochistan',
+      ]),
+      ownerId: ownerId,
+      teacherIds: teacherIds,
+      studentIds: studentIds,
+      parentIds: parentIds,
+      isActive: _faker.randomGenerator.boolean(),
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+    );
+  }
+
+  // Generates a list of fake Institutions
+  List<Institution> generateFakeInstitutions(int count) {
+    return List.generate(
+      count,
+      (index) => generateFakeInstitution(id: 'inst_${index + 1}'),
+    );
+  }
+
+  // --- Firestore Integration (for adding to your dev database) ---
+  Future<void> addFakeInstitutionsToFirestore(int count) async {
+    final firestore = FirebaseFirestore.instance;
+    final batch = firestore.batch();
+    final institutions = generateFakeInstitutions(count);
+
+    print(
+      'Generating $count fake institutions and preparing for Firestore upload...',
+    );
+
+    for (var inst in institutions) {
+      final docRef = firestore.collection('institutions').doc(inst.id);
+      batch.set(docRef, inst.toMap());
+    }
+
+    try {
+      await batch.commit();
+      print('Successfully added $count fake institutions to Firestore!');
+    } catch (e) {
+      print('Error adding fake institutions to Firestore: $e');
+      rethrow;
+    }
+  }
+}

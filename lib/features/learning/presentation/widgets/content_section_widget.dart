@@ -1,4 +1,5 @@
 // lib/features/learning/presentation/widgets/content_section_widget.dart
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -10,11 +11,13 @@ import '../../../../core/theme/app_text_styles.dart';
 class ContentSectionWidget extends StatelessWidget {
   final Concept concept;
   final Color gradeColor;
+  final List<String> conceptImages;
 
   const ContentSectionWidget({
     super.key,
     required this.concept,
     required this.gradeColor,
+    required this.conceptImages,
   });
 
   @override
@@ -31,6 +34,14 @@ class ContentSectionWidget extends StatelessWidget {
               title: 'Introduction',
               child: _buildTextContent(concept.content.introduction!),
             ),
+
+          // --- NEW: Concept Image Section ---
+          if (concept.images.isNotEmpty) // Only show if image list is not empty
+            _buildConceptImage(
+              concept.images.first,
+              gradeColor,
+            ), // Display the first image
+          // --- END NEW ---
 
           // Definition
           if (concept.content.definition != null)
@@ -577,4 +588,74 @@ class ContentSectionWidget extends StatelessWidget {
         )
         .join(' ');
   }
+
+  // --- NEW: Widget to display the concept image ---
+  Widget _buildConceptImage(String imageUrl, Color gradeColor) {
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppDimensions.paddingL,
+        vertical: AppDimensions.spaceL,
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(AppDimensions.radiusXXL),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.shadow.withOpacity(0.2),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+          gradient: LinearGradient(
+            colors: [
+              gradeColor.withOpacity(0.2), // Light gradient border
+              gradeColor.withOpacity(0.0),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          border: Border.all(
+            color: gradeColor.withOpacity(0.4),
+            width: 2,
+          ), // Subtle border
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(
+            AppDimensions.radiusXXL - 2,
+          ), // Slightly smaller radius to show border
+          child: CachedNetworkImage(
+            // Use CachedNetworkImage for better performance and caching
+            imageUrl: imageUrl,
+            fit: BoxFit.cover,
+            placeholder:
+                (context, url) => Container(
+                  height: 200.h,
+                  color: AppColors.surface, // Placeholder background
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(gradeColor),
+                    ),
+                  ),
+                ),
+            errorWidget: (context, url, error) {
+              return Container(
+                height: 200.h,
+                color: AppColors.error.withOpacity(0.1), // Error background
+                child: Center(
+                  child: Icon(
+                    Icons.broken_image_rounded,
+                    size: 60.w,
+                    color: AppColors.error,
+                  ),
+                ),
+              );
+            },
+            width: double.infinity,
+            height: 200.h, // Fixed height for a consistent look
+          ),
+        ),
+      ),
+    );
+  }
+  // --- END NEW ---
 }

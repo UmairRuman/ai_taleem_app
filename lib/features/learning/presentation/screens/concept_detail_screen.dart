@@ -208,6 +208,7 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
   }
 
   Widget _buildContent(Concept concept) {
+    log("Concept Image path: ${concept.images.toString()}");
     // log("Interactive elements  ${concept.interactiveElements.toString()}");
     final gradeColor = _getGradeColor(concept.gradeLevel);
 
@@ -250,6 +251,7 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
 
                       // Content sections
                       ContentSectionWidget(
+                        conceptImages: concept.images,
                         concept: concept,
                         gradeColor: gradeColor,
                       ),

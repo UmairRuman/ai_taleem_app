@@ -69,6 +69,18 @@ class RouteNames {
   static const String classAnalytics = '/teacher/analytics/:classId';
   static const String assignQuiz = '/teacher/assign-quiz';
 
+  // Admin Pannel Routes for Institutions
+  static const String institutionsOverview =
+      '/admin-panel/institutions'; // New route
+  static const String institutionDetail =
+      '/admin-panel/institutions/:id'; // New route for institution details
+
+  // Future routes for other admin sections
+  static const String conceptsManagement = '/admin-panel/concepts';
+  static const String quizzesManagement = '/admin-panel/quizzes';
+  static const String usersManagement = '/admin-panel/users';
+  static const String overallAnalytics = '/admin-panel/analytics';
+
   // School/Institution Management
   static const String schoolRegistration = '/school/register';
   static const String schoolSelection = '/school/select';

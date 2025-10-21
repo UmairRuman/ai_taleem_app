@@ -3,7 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:taleem_ai/core/routes/route_names.dart';
+import 'package:taleem_ai/shared/widgets/background.dart';
 
 import '../../../../core/domain/entities/concept.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -20,6 +22,7 @@ class AdminPanelScreen extends ConsumerStatefulWidget {
 }
 
 class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen> {
+  String _activeMenuItem = 'JSON Import'; // New: To highlight active menu item
   final TextEditingController _jsonController = TextEditingController();
   bool _isLoading = false;
   bool _isValidJson = true;
@@ -32,6 +35,20 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen> {
   void dispose() {
     _jsonController.dispose();
     super.dispose();
+  }
+
+  void _onMenuItemTap(String itemName, String routeName) {
+    setState(() {
+      _activeMenuItem = itemName;
+      _isSidebarOpen = false; // Close sidebar on mobile
+    });
+    // Use Navigator or GoRouter to push the new route
+    // Assuming you have a router setup (e.g., GoRouter)
+    // For now, we'll just print or use basic Navigator.push if GoRouter is not ready.
+    if (routeName == RouteNames.institutionsOverview) {
+      context.push(routeName);
+    }
+    // Add other routes here later
   }
 
   void _validateAndParseJson() {
@@ -167,6 +184,7 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen> {
       body: SafeArea(
         child: Stack(
           children: [
+            Positioned.fill(child: buildBackgroundDecorations()),
             // Main Content
             _buildMainContent(),
 
@@ -269,26 +287,41 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen> {
                 icon: Icons.upload_file_rounded,
                 title: 'JSON Import',
                 isActive: true,
+                onTap: () {},
+              ),
+              _buildMenuItem(
+                icon: Icons.business_rounded, // New icon for institutions
+                title: 'Institutions',
+                isActive: _activeMenuItem == 'Institutions',
+                onTap:
+                    () => _onMenuItemTap(
+                      'Institutions',
+                      RouteNames.institutionsOverview,
+                    ),
               ),
               _buildMenuItem(
                 icon: Icons.school_rounded,
                 title: 'Concepts',
                 isActive: false,
+                onTap: () {},
               ),
               _buildMenuItem(
                 icon: Icons.quiz_rounded,
                 title: 'Quizzes',
                 isActive: false,
+                onTap: () {},
               ),
               _buildMenuItem(
                 icon: Icons.people_rounded,
                 title: 'Users',
                 isActive: false,
+                onTap: () {},
               ),
               _buildMenuItem(
                 icon: Icons.analytics_rounded,
                 title: 'Analytics',
                 isActive: false,
+                onTap: () {},
               ),
 
               const Spacer(),
@@ -332,10 +365,12 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen> {
     );
   }
 
+  // Modified _buildMenuItem to accept an onTap callback
   Widget _buildMenuItem({
     required IconData icon,
     required String title,
     required bool isActive,
+    required VoidCallback onTap,
   }) {
     return Container(
       margin: EdgeInsets.symmetric(
@@ -353,7 +388,7 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen> {
           style: AppTextStyles.bodyMedium(color: Colors.white),
         ),
         dense: true,
-        onTap: () => setState(() => _isSidebarOpen = false),
+        onTap: onTap,
       ),
     );
   }
