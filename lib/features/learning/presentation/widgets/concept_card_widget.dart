@@ -1,6 +1,7 @@
 // lib/features/learning/presentation/widgets/concept_card_widget.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:taleem_ai/core/constants/storage_keys.dart';
 
 import '../../../../core/domain/entities/concept.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -177,7 +178,11 @@ class _ConceptCardWidgetState extends State<ConceptCardWidget>
                     children: [
                       // Title
                       Text(
-                        widget.concept.title,
+                        widget
+                                .concept
+                                .localizedContent[AppConstants.english]
+                                ?.title ??
+                            'Untitled Concept',
                         style: AppTextStyles.h4(),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,

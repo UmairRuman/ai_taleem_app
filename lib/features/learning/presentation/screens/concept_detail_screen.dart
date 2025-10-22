@@ -6,10 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:taleem_ai/core/routes/route_names.dart';
-import 'package:taleem_ai/features/learning/presentation/screens/urdu_translation_screen.dart';
 import 'package:taleem_ai/features/learning/presentation/widgets/content_section_widget.dart';
 import 'package:taleem_ai/features/learning/presentation/widgets/interactive_elements_widget.dart';
 import 'package:taleem_ai/features/onboarding/presentation/providers/concepts_provider.dart';
+import 'package:taleem_ai/shared/providers/language_provider.dart';
 
 import '../../../../core/domain/entities/concept.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -30,11 +30,15 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
     with TickerProviderStateMixin {
   late AnimationController _headerController;
   late AnimationController _contentController;
+  late AnimationController _fabController;
   late Animation<double> _headerAnimation;
   late Animation<Offset> _slideAnimation;
+  late Animation<double> _fabScaleAnimation;
+  late Animation<double> _fabRotationAnimation;
 
   final ScrollController _scrollController = ScrollController();
   bool _isHeaderCollapsed = false;
+  bool _showFab = false;
 
   @override
   void initState() {
@@ -45,6 +49,14 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
     // Fetch concept
     Future.microtask(() {
       ref.read(conceptsProvider.notifier).getConcept(widget.conceptId);
+    });
+
+    // Delay FAB appearance
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (mounted) {
+        setState(() => _showFab = true);
+        _fabController.forward();
+      }
     });
   }
 
@@ -59,6 +71,11 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
       duration: const Duration(milliseconds: 600),
     );
 
+    _fabController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+
     _headerAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
       CurvedAnimation(parent: _headerController, curve: Curves.easeInOut),
     );
@@ -69,6 +86,15 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
     ).animate(
       CurvedAnimation(parent: _contentController, curve: Curves.easeOutCubic),
     );
+
+    _fabScaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _fabController, curve: Curves.elasticOut),
+    );
+
+    _fabRotationAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _fabController, curve: Curves.easeInOut));
 
     _contentController.forward();
   }
@@ -89,6 +115,7 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
   void dispose() {
     _headerController.dispose();
     _contentController.dispose();
+    _fabController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -106,15 +133,41 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
     }
   }
 
-  void _navigateToUrduTranslation(Concept concept, Color gradeColor) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder:
-            (context) => UrduTranslationScreen(
-              conceptTitle: concept.title,
-              gradeColor: gradeColor,
+  void _toggleLanguage() {
+    final currentLanguage = ref.read(languageProvider);
+    final newLanguage = currentLanguage == 'en' ? 'ur' : 'en';
+
+    // Animate the rotation
+    _fabController.reset();
+    _fabController.forward();
+
+    // Toggle language
+    ref.read(languageProvider.notifier).toggleLanguage();
+
+    // Show snackbar with animation
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              newLanguage == 'ur' ? Icons.translate : Icons.language,
+              color: Colors.white,
             ),
+            SizedBox(width: AppDimensions.spaceM),
+            Text(
+              newLanguage == 'ur'
+                  ? 'اردو میں تبدیل ہو گیا'
+                  : 'Switched to English',
+              style: AppTextStyles.bodyMedium(color: Colors.white),
+            ),
+          ],
+        ),
+        backgroundColor: AppColors.success,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+        ),
+        duration: const Duration(seconds: 2),
       ),
     );
   }
@@ -195,21 +248,115 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
 
   @override
   Widget build(BuildContext context) {
+    final languageState = ref.watch(languageProvider);
     final conceptState = ref.watch(conceptsProvider);
 
     return Scaffold(
       body:
           conceptState is ConceptsSingleLoadedState
-              ? _buildContent(conceptState.concept)
+              ? _buildContent(conceptState.concept, languageState)
               : conceptState is ConceptsLoadingState
               ? _buildLoading()
               : _buildError(),
+      floatingActionButton:
+          conceptState is ConceptsSingleLoadedState
+              ? _buildLanguageToggleFAB(languageState)
+              : null,
     );
   }
 
-  Widget _buildContent(Concept concept) {
+  Widget _buildLanguageToggleFAB(String currentLanguage) {
+    return AnimatedBuilder(
+      animation: _fabScaleAnimation,
+      builder: (context, child) {
+        return Transform.scale(scale: _fabScaleAnimation.value, child: child);
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(AppDimensions.radiusXXL),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withOpacity(0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: _toggleLanguage,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusXXL),
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppDimensions.paddingL,
+                vertical: AppDimensions.paddingM,
+              ),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary,
+                    AppColors.primary.withOpacity(0.8),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusXXL),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Language icon with rotation animation
+                  AnimatedBuilder(
+                    animation: _fabRotationAnimation,
+                    builder: (context, child) {
+                      return Transform.rotate(
+                        angle: _fabRotationAnimation.value * 3.14159 * 2,
+                        child: child,
+                      );
+                    },
+                    child: Icon(
+                      currentLanguage == 'en'
+                          ? Icons.translate_rounded
+                          : Icons.language_rounded,
+                      color: Colors.white,
+                      size: 24.w,
+                    ),
+                  ),
+                  SizedBox(width: AppDimensions.spaceS),
+                  // Language text
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    transitionBuilder: (child, animation) {
+                      return FadeTransition(
+                        opacity: animation,
+                        child: SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(0, 0.5),
+                            end: Offset.zero,
+                          ).animate(animation),
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: Text(
+                      currentLanguage == 'en' ? 'اردو' : 'English',
+                      key: ValueKey(currentLanguage),
+                      style: AppTextStyles.button(color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContent(Concept concept, String languageState) {
     log("Concept Image path: ${concept.images.toString()}");
-    // log("Interactive elements  ${concept.interactiveElements.toString()}");
     final gradeColor = _getGradeColor(concept.gradeLevel);
 
     return Container(
@@ -235,7 +382,7 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
             controller: _scrollController,
             slivers: [
               // Animated app bar
-              _buildSliverAppBar(concept, gradeColor),
+              _buildSliverAppBar(concept, gradeColor, languageState),
 
               // Content
               SliverToBoxAdapter(
@@ -244,13 +391,14 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
                   child: Column(
                     children: [
                       // Hero section
-                      _buildHeroSection(concept, gradeColor),
+                      _buildHeroSection(concept, gradeColor, languageState),
 
-                      // Quick Action Cards (Translation & Tutorial)
-                      _buildQuickActionCards(concept, gradeColor),
+                      // Tutorial Card (now full width)
+                      _buildTutorialCard(concept, gradeColor),
 
                       // Content sections
                       ContentSectionWidget(
+                        languageState: languageState,
                         conceptImages: concept.images,
                         concept: concept,
                         gradeColor: gradeColor,
@@ -264,10 +412,13 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
                       ),
 
                       // Quiz button
-                      if (concept.practiceQuiz.isNotEmpty)
+                      if (concept
+                          .localizedContent[languageState]!
+                          .practiceQuiz
+                          .isNotEmpty)
                         _buildQuizButton(concept, gradeColor),
 
-                      SizedBox(height: AppDimensions.spaceXXL),
+                      SizedBox(height: AppDimensions.spaceXXL * 2),
                     ],
                   ),
                 ),
@@ -279,148 +430,116 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
     );
   }
 
-  Widget _buildQuickActionCards(Concept concept, Color gradeColor) {
+  Widget _buildTutorialCard(Concept concept, Color gradeColor) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
-      child: Column(
-        children: [
-          SizedBox(height: AppDimensions.spaceL),
-
-          // Translation and Tutorial Cards
-          Row(
-            children: [
-              // Translate to Urdu Card
-              Expanded(
-                child: _buildActionCard(
-                  icon: Icons.translate_rounded,
-                  title: 'اردو میں',
-                  subtitle: 'Translate to Urdu',
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.success.withOpacity(0.8),
-                      AppColors.success.withOpacity(0.6),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  onTap: () => _navigateToUrduTranslation(concept, gradeColor),
-                ),
-              ),
-
-              SizedBox(width: AppDimensions.spaceM),
-
-              // Video Tutorial Card
-              Expanded(
-                child: _buildActionCard(
-                  icon: Icons.play_circle_filled_rounded,
-                  title: 'Tutorial',
-                  subtitle: 'Watch Video',
-                  gradient: LinearGradient(
-                    colors: [
-                      gradeColor.withOpacity(0.8),
-                      gradeColor.withOpacity(0.6),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  onTap:
-                      () => _showComingSoonDialog(
-                        'Video Tutorial',
-                        Icons.play_circle_filled_rounded,
-                        gradeColor,
-                      ),
-                ),
-              ),
-            ],
-          ),
-
-          SizedBox(height: AppDimensions.spaceL),
-        ],
+      padding: EdgeInsets.symmetric(
+        horizontal: AppDimensions.paddingL,
+        vertical: AppDimensions.spaceL,
       ),
-    );
-  }
-
-  Widget _buildActionCard({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Gradient gradient,
-    required VoidCallback onTap,
-  }) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.0, end: 1.0),
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeOutCubic,
-      builder: (context, value, child) {
-        return Transform.scale(
-          scale: 0.8 + (0.2 * value),
-          child: Opacity(opacity: value, child: child),
-        );
-      },
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
-          child: Container(
-            padding: EdgeInsets.all(AppDimensions.paddingM),
-            decoration: BoxDecoration(
-              gradient: gradient,
-              borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
-              boxShadow: [
-                BoxShadow(
-                  color: gradient.colors.first.withOpacity(0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 6),
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0.0, end: 1.0),
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeOutCubic,
+        builder: (context, value, child) {
+          return Transform.scale(
+            scale: 0.9 + (0.1 * value),
+            child: Opacity(opacity: value, child: child),
+          );
+        },
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap:
+                () => _showComingSoonDialog(
+                  'Video Tutorial',
+                  Icons.play_circle_filled_rounded,
+                  gradeColor,
                 ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: EdgeInsets.all(AppDimensions.paddingM),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(icon, color: Colors.white, size: 32.w),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(AppDimensions.paddingL),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    gradeColor.withOpacity(0.9),
+                    gradeColor.withOpacity(0.7),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-                SizedBox(height: AppDimensions.spaceM),
-                Text(
-                  title,
-                  style: AppTextStyles.h5(color: Colors.white),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: AppDimensions.spaceXS),
-                Text(
-                  subtitle,
-                  style: AppTextStyles.caption(
-                    color: Colors.white.withOpacity(0.9),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                boxShadow: [
+                  BoxShadow(
+                    color: gradeColor.withOpacity(0.3),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: AppDimensions.spaceS),
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppDimensions.paddingS,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-                  ),
-                  child: Text(
-                    'SOON',
-                    style: TextStyle(
+                ],
+              ),
+              child: Row(
+                children: [
+                  // Play icon container
+                  Container(
+                    padding: EdgeInsets.all(AppDimensions.paddingM),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.25),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.play_circle_filled_rounded,
                       color: Colors.white,
-                      fontSize: 9.sp,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.8,
+                      size: 40.w,
                     ),
                   ),
-                ),
-              ],
+                  SizedBox(width: AppDimensions.spaceL),
+                  // Text content
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Video Tutorial',
+                          style: AppTextStyles.h4(color: Colors.white),
+                        ),
+                        SizedBox(height: AppDimensions.spaceXS),
+                        Text(
+                          'Watch step-by-step explanation',
+                          style: AppTextStyles.bodySmall(
+                            color: Colors.white.withOpacity(0.9),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Coming soon badge
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppDimensions.paddingM,
+                      vertical: AppDimensions.paddingS,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radiusL,
+                      ),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.5),
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      'SOON',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -459,7 +578,11 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
     );
   }
 
-  Widget _buildSliverAppBar(Concept concept, Color gradeColor) {
+  Widget _buildSliverAppBar(
+    Concept concept,
+    Color gradeColor,
+    String languageState,
+  ) {
     return SliverAppBar(
       expandedHeight: 200.h,
       floating: false,
@@ -494,7 +617,7 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
             return Opacity(
               opacity: 1 - _headerAnimation.value,
               child: Text(
-                concept.title,
+                concept.localizedContent[languageState]!.title,
                 style: AppTextStyles.h5(color: Colors.white),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -531,14 +654,21 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
     );
   }
 
-  Widget _buildHeroSection(Concept concept, Color gradeColor) {
+  Widget _buildHeroSection(
+    Concept concept,
+    Color gradeColor,
+    String languageState,
+  ) {
     return Container(
       padding: EdgeInsets.all(AppDimensions.paddingL),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Title
-          Text(concept.title, style: AppTextStyles.display2()),
+          Text(
+            concept.localizedContent[languageState]!.title,
+            style: AppTextStyles.display2(),
+          ),
 
           SizedBox(height: AppDimensions.spaceM),
 

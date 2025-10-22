@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:taleem_ai/core/domain/entities/quiz.dart';
 import 'package:taleem_ai/core/utils/answer_validator.dart';
 import 'package:taleem_ai/features/onboarding/presentation/providers/concepts_provider.dart';
+import 'package:taleem_ai/shared/providers/language_provider.dart';
 
 import '../../../../core/domain/entities/concept.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -101,8 +102,9 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
     }
   }
 
-  void _nextQuestion(Concept concept) {
-    final totalQuestions = concept.practiceQuiz.length;
+  void _nextQuestion(Concept concept, String languageState) {
+    final totalQuestions =
+        concept.localizedContent[languageState]!.practiceQuiz.length;
 
     if (_currentQuestionIndex < totalQuestions - 1) {
       _questionController.reset();
@@ -151,21 +153,22 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
 
   @override
   Widget build(BuildContext context) {
+    final languageState = ref.watch(languageProvider);
     final conceptState = ref.watch(conceptsProvider);
 
     return Scaffold(
       body:
           conceptState is ConceptsSingleLoadedState
-              ? _buildQuizContent(conceptState.concept)
+              ? _buildQuizContent(conceptState.concept, languageState)
               : conceptState is ConceptsLoadingState
               ? _buildLoading()
               : _buildError(),
     );
   }
 
-  Widget _buildQuizContent(Concept concept) {
+  Widget _buildQuizContent(Concept concept, String languageState) {
     final gradeColor = _getGradeColor(concept.gradeLevel);
-    final questions = concept.practiceQuiz;
+    final questions = concept.localizedContent[languageState]!.practiceQuiz;
 
     if (questions.isEmpty) {
       return _buildNoQuestions(gradeColor);
@@ -192,7 +195,12 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
           SafeArea(
             child: Column(
               children: [
-                _buildHeader(concept, gradeColor, questions.length),
+                _buildHeader(
+                  concept,
+                  gradeColor,
+                  questions.length,
+                  languageState,
+                ),
                 _buildProgressBar(questions.length, gradeColor),
                 Expanded(
                   child: SlideTransition(
@@ -211,7 +219,7 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
                     ),
                   ),
                 ),
-                _buildNavigationButtons(concept, gradeColor),
+                _buildNavigationButtons(concept, gradeColor, languageState),
               ],
             ),
           ),
@@ -255,7 +263,12 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
     );
   }
 
-  Widget _buildHeader(Concept concept, Color gradeColor, int totalQuestions) {
+  Widget _buildHeader(
+    Concept concept,
+    Color gradeColor,
+    int totalQuestions,
+    String languageState,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       child: Row(
@@ -269,7 +282,7 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  concept.title,
+                  concept.localizedContent[languageState]!.title,
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -329,7 +342,11 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
     );
   }
 
-  Widget _buildNavigationButtons(Concept concept, Color gradeColor) {
+  Widget _buildNavigationButtons(
+    Concept concept,
+    Color gradeColor,
+    String languageState,
+  ) {
     final hasAnswer = _answers.containsKey(_currentQuestionIndex);
 
     return Container(
@@ -351,14 +368,22 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
           Expanded(
             flex: 2,
             child: ElevatedButton(
-              onPressed: hasAnswer ? () => _nextQuestion(concept) : null,
+              onPressed:
+                  hasAnswer
+                      ? () => _nextQuestion(concept, languageState)
+                      : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: gradeColor,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 disabledBackgroundColor: Colors.grey[300],
               ),
               child: Text(
-                _currentQuestionIndex < concept.practiceQuiz.length - 1
+                _currentQuestionIndex <
+                        concept
+                                .localizedContent[languageState]!
+                                .practiceQuiz
+                                .length -
+                            1
                     ? 'Next Question'
                     : 'Finish Quiz',
                 style: const TextStyle(

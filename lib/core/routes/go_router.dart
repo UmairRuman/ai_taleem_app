@@ -23,7 +23,7 @@ import '../../features/onboarding/presentation/screens/splash_screen.dart';
 import 'route_names.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: RouteNames.adminPanel,
+  initialLocation: RouteNames.splash,
   routes: [
     GoRoute(
       path: RouteNames.splash,

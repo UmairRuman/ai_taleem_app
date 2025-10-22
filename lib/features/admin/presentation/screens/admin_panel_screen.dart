@@ -184,7 +184,7 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            Positioned.fill(child: buildBackgroundDecorations()),
+            Positioned.fill(child: buildEducationalBackground()),
             // Main Content
             _buildMainContent(),
 
@@ -394,182 +394,113 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen> {
   }
 
   Widget _buildMainContent() {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(AppDimensions.paddingL),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Import Curriculum Data', style: AppTextStyles.h3()),
-                    SizedBox(height: 8.h),
-                    Text(
-                      'Paste your Knowledge Graph JSON below',
-                      style: AppTextStyles.bodyMedium(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-
-          SizedBox(height: AppDimensions.spaceXL),
-
-          // JSON Input Card
-          Container(
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(AppDimensions.radiusL),
-              border: Border.all(
-                color: _isValidJson ? AppColors.border : AppColors.error,
-                width: 2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
+    return Container(
+      color: Colors.transparent,
+      child: SingleChildScrollView(
+        padding: EdgeInsets.all(AppDimensions.paddingL),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
               children: [
-                // Card Header
-                Container(
-                  padding: EdgeInsets.all(AppDimensions.paddingM),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryLight.withOpacity(0.1),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(AppDimensions.radiusL),
-                      topRight: Radius.circular(AppDimensions.radiusL),
-                    ),
-                  ),
-                  child: Row(
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        Icons.code_rounded,
-                        color: AppColors.primary,
-                        size: 24.w,
-                      ),
-                      SizedBox(width: AppDimensions.spaceM),
-                      Text('JSON Input', style: AppTextStyles.h5()),
-                      const Spacer(),
-                      if (_jsonController.text.isNotEmpty)
-                        TextButton.icon(
-                          onPressed: () {
-                            _jsonController.clear();
-                            setState(() {
-                              _parsedConcepts = null;
-                              _statusMessage = '';
-                            });
-                          },
-                          icon: const Icon(Icons.clear_rounded, size: 18),
-                          label: const Text('Clear'),
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 12.w,
-                              vertical: 8.h,
-                            ),
-                          ),
+                      Text('Import Curriculum Data', style: AppTextStyles.h3()),
+                      SizedBox(height: 8.h),
+                      Text(
+                        'Paste your Knowledge Graph JSON below',
+                        style: AppTextStyles.bodyMedium(
+                          color: AppColors.textSecondary,
                         ),
+                      ),
                     ],
                   ),
                 ),
-
-                // Text Field
-                Padding(
-                  padding: EdgeInsets.all(AppDimensions.paddingM),
-                  child: TextField(
-                    controller: _jsonController,
-                    maxLines: 15,
-                    style: TextStyle(fontFamily: 'Courier', fontSize: 12.sp),
-                    decoration: InputDecoration(
-                      hintText:
-                          'Paste your JSON here...\n\nExample:\n{\n  "knowledge_graph_topic": "Sets",\n  "concepts": [...]\n}',
-                      border: InputBorder.none,
-                      hintStyle: TextStyle(
-                        color: AppColors.textDisabled,
-                        fontFamily: 'Courier',
-                        fontSize: 12.sp,
-                      ),
-                    ),
-                  ),
-                ),
               ],
             ),
-          ),
 
-          SizedBox(height: AppDimensions.spaceL),
+            SizedBox(height: AppDimensions.spaceXL),
 
-          // Action Buttons
-          Column(
-            children: [
-              SizedBox(
-                width: double.infinity,
-                child: CustomButton(
-                  text: 'Validate JSON',
-                  onPressed: _validateAndParseJson,
-                  icon: Icons.check_circle_outline_rounded,
-                  isOutlined: true,
-                ),
-              ),
-              SizedBox(height: AppDimensions.spaceM),
-              SizedBox(
-                width: double.infinity,
-                child: CustomButton(
-                  text: 'Upload to Firestore',
-                  onPressed:
-                      _parsedConcepts != null ? _uploadToFirestore : null,
-                  icon: Icons.cloud_upload_rounded,
-                  isLoading: _isLoading,
-                  backgroundColor: AppColors.success,
-                ),
-              ),
-            ],
-          ),
-
-          SizedBox(height: AppDimensions.spaceL),
-
-          // Status Message
-          if (_statusMessage.isNotEmpty)
+            // JSON Input Card
             Container(
-              padding: EdgeInsets.all(AppDimensions.paddingM),
               decoration: BoxDecoration(
-                color:
-                    _isValidJson
-                        ? AppColors.success.withOpacity(0.1)
-                        : AppColors.error.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+                color: Colors.white.withOpacity(0.75),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusL),
                 border: Border.all(
-                  color: _isValidJson ? AppColors.success : AppColors.error,
-                  width: 1,
+                  color: _isValidJson ? AppColors.border : AppColors.error,
+                  width: 2,
                 ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    _isValidJson
-                        ? Icons.check_circle_rounded
-                        : Icons.error_rounded,
-                    color: _isValidJson ? AppColors.success : AppColors.error,
-                    size: 24.w,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
-                  SizedBox(width: AppDimensions.spaceM),
-                  Expanded(
-                    child: Text(
-                      _statusMessage,
-                      style: AppTextStyles.bodyMedium(
-                        color:
-                            _isValidJson
-                                ? AppColors.successDark
-                                : AppColors.errorDark,
+                ],
+              ),
+              child: Column(
+                children: [
+                  // Card Header
+                  Container(
+                    padding: EdgeInsets.all(AppDimensions.paddingM),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.08),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(AppDimensions.radiusL),
+                        topRight: Radius.circular(AppDimensions.radiusL),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.code_rounded,
+                          color: AppColors.primary,
+                          size: 24.w,
+                        ),
+                        SizedBox(width: AppDimensions.spaceM),
+                        Text('JSON Input', style: AppTextStyles.h5()),
+                        const Spacer(),
+                        if (_jsonController.text.isNotEmpty)
+                          TextButton.icon(
+                            onPressed: () {
+                              _jsonController.clear();
+                              setState(() {
+                                _parsedConcepts = null;
+                                _statusMessage = '';
+                              });
+                            },
+                            icon: const Icon(Icons.clear_rounded, size: 18),
+                            label: const Text('Clear'),
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 12.w,
+                                vertical: 8.h,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+
+                  // Text Field
+                  Padding(
+                    padding: EdgeInsets.all(AppDimensions.paddingM),
+                    child: TextField(
+                      controller: _jsonController,
+                      maxLines: 15,
+                      style: TextStyle(fontFamily: 'Courier', fontSize: 12.sp),
+                      decoration: InputDecoration(
+                        hintText:
+                            'Paste your JSON here...\n\nExample:\n{\n  "knowledge_graph_topic": "Sets",\n  "concepts": [...]\n}',
+                        border: InputBorder.none,
+                        hintStyle: TextStyle(
+                          color: AppColors.textDisabled,
+                          fontFamily: 'Courier',
+                          fontSize: 12.sp,
+                        ),
                       ),
                     ),
                   ),
@@ -577,17 +508,91 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen> {
               ),
             ),
 
-          // Preview Parsed Concepts
-          if (_parsedConcepts != null && _parsedConcepts!.isNotEmpty) ...[
-            SizedBox(height: AppDimensions.spaceXL),
-            Text(
-              'Preview (${_parsedConcepts!.length} concepts)',
-              style: AppTextStyles.h4(),
+            SizedBox(height: AppDimensions.spaceL),
+
+            // Action Buttons
+            Column(
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  child: CustomButton(
+                    text: 'Validate JSON',
+                    onPressed: _validateAndParseJson,
+                    icon: Icons.check_circle_outline_rounded,
+                    isOutlined: true,
+                  ),
+                ),
+                SizedBox(height: AppDimensions.spaceM),
+                SizedBox(
+                  width: double.infinity,
+                  child: CustomButton(
+                    text: 'Upload to Firestore',
+                    onPressed:
+                        _parsedConcepts != null ? _uploadToFirestore : null,
+                    icon: Icons.cloud_upload_rounded,
+                    isLoading: _isLoading,
+                    backgroundColor: AppColors.success,
+                  ),
+                ),
+              ],
             ),
-            SizedBox(height: AppDimensions.spaceM),
-            ..._parsedConcepts!.map((concept) => _buildConceptCard(concept)),
+
+            SizedBox(height: AppDimensions.spaceL),
+
+            // Status Message
+            if (_statusMessage.isNotEmpty)
+              Container(
+                padding: EdgeInsets.all(AppDimensions.paddingM),
+                decoration: BoxDecoration(
+                  color:
+                      _isValidJson
+                          ? AppColors.success.withOpacity(
+                            0.15,
+                          ) // ✅ More transparent
+                          : AppColors.error.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+                  border: Border.all(
+                    color: _isValidJson ? AppColors.success : AppColors.error,
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      _isValidJson
+                          ? Icons.check_circle_rounded
+                          : Icons.error_rounded,
+                      color: _isValidJson ? AppColors.success : AppColors.error,
+                      size: 24.w,
+                    ),
+                    SizedBox(width: AppDimensions.spaceM),
+                    Expanded(
+                      child: Text(
+                        _statusMessage,
+                        style: AppTextStyles.bodyMedium(
+                          color:
+                              _isValidJson
+                                  ? AppColors.successDark
+                                  : AppColors.errorDark,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+            // Preview Parsed Concepts
+            if (_parsedConcepts != null && _parsedConcepts!.isNotEmpty) ...[
+              SizedBox(height: AppDimensions.spaceXL),
+              Text(
+                'Preview (${_parsedConcepts!.length} concepts)',
+                style: AppTextStyles.h4(),
+              ),
+              SizedBox(height: AppDimensions.spaceM),
+              ..._parsedConcepts!.map((concept) => _buildConceptCard(concept)),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -597,7 +602,7 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen> {
       margin: EdgeInsets.only(bottom: AppDimensions.spaceM),
       padding: EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Colors.white.withOpacity(0.7),
         borderRadius: BorderRadius.circular(AppDimensions.radiusM),
         border: Border.all(color: AppColors.border),
       ),
@@ -638,7 +643,10 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen> {
             ],
           ),
           SizedBox(height: 8.h),
-          Text(concept.title, style: AppTextStyles.h5()),
+          Text(
+            concept.localizedContent['en']!.title,
+            style: AppTextStyles.h5(),
+          ),
           SizedBox(height: 4.h),
           Text(
             'ID: ${concept.conceptId}',

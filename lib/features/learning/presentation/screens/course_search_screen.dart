@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:taleem_ai/core/constants/storage_keys.dart';
 import 'package:taleem_ai/features/onboarding/presentation/providers/concepts_provider.dart';
 
 import '../../../../core/domain/entities/concept.dart';
@@ -81,10 +82,16 @@ class _CourseSearchScreenState extends ConsumerState<CourseSearchScreen>
 
       _filteredConcepts =
           concepts.where((concept) {
+            // Get localized content safely
+            final localizedContent =
+                concept.localizedContent[AppConstants.english];
+
             // Search in title
-            final titleMatch = concept.title.toLowerCase().contains(
-              lowercaseQuery,
-            );
+            final titleMatch =
+                localizedContent?.title.toLowerCase().contains(
+                  lowercaseQuery,
+                ) ??
+                false;
 
             // Search in topic
             final topicMatch = concept.topic.toLowerCase().contains(
@@ -98,14 +105,14 @@ class _CourseSearchScreenState extends ConsumerState<CourseSearchScreen>
 
             // Search in content introduction
             final introMatch =
-                concept.content.introduction?.toLowerCase().contains(
+                localizedContent?.content.introduction?.toLowerCase().contains(
                   lowercaseQuery,
                 ) ??
                 false;
 
             // Search in definition
             final defMatch =
-                concept.content.definition?.toLowerCase().contains(
+                localizedContent?.content.definition?.toLowerCase().contains(
                   lowercaseQuery,
                 ) ??
                 false;
@@ -119,13 +126,21 @@ class _CourseSearchScreenState extends ConsumerState<CourseSearchScreen>
 
       // Sort by relevance (title matches first)
       _filteredConcepts.sort((a, b) {
-        final aTitle = a.title.toLowerCase().contains(lowercaseQuery);
-        final bTitle = b.title.toLowerCase().contains(lowercaseQuery);
+        final aLocalizedContent = a.localizedContent[AppConstants.english];
+        final bLocalizedContent = b.localizedContent[AppConstants.english];
+
+        final aTitle =
+            aLocalizedContent?.title.toLowerCase().contains(lowercaseQuery) ??
+            false;
+
+        final bTitle =
+            bLocalizedContent?.title.toLowerCase().contains(lowercaseQuery) ??
+            false;
 
         if (aTitle && !bTitle) return -1;
         if (!aTitle && bTitle) return 1;
 
-        // Then by order
+        // Then by sequence order
         return a.sequenceOrder.compareTo(b.sequenceOrder);
       });
     });

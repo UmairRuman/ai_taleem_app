@@ -197,19 +197,19 @@ class _InstitutionsOverviewPageState
                 ),
               ],
             ),
-            SizedBox(height: AppDimensions.spaceM),
-            Container(
-              padding: EdgeInsets.all(AppDimensions.paddingM),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(AppDimensions.radiusL),
-                border: Border.all(color: AppColors.primary.withOpacity(0.1)),
-              ),
-              child: Text(
-                'Track institutional performance, student engagement, and analytics across all schools. Monitor compliance, progress, and key metrics in real-time.',
-                style: AppTextStyles.bodyMedium(color: AppColors.textSecondary),
-              ),
-            ),
+            // SizedBox(height: AppDimensions.spaceM),
+            // Container(
+            //   padding: EdgeInsets.all(AppDimensions.paddingM),
+            //   decoration: BoxDecoration(
+            //     color: AppColors.primary.withOpacity(0.05),
+            //     borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+            //     border: Border.all(color: AppColors.primary.withOpacity(0.1)),
+            //   ),
+            //   child: Text(
+            //     'Track institutional performance, student engagement, and analytics across all schools. Monitor compliance, progress, and key metrics in real-time.',
+            //     style: AppTextStyles.bodyMedium(color: AppColors.textSecondary),
+            //   ),
+            // ),
           ],
         ),
       ),

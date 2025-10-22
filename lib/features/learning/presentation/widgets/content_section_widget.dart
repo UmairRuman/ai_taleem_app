@@ -12,9 +12,11 @@ class ContentSectionWidget extends StatelessWidget {
   final Concept concept;
   final Color gradeColor;
   final List<String> conceptImages;
+  final String languageState;
 
   const ContentSectionWidget({
     super.key,
+    required this.languageState,
     required this.concept,
     required this.gradeColor,
     required this.conceptImages,
@@ -28,11 +30,14 @@ class ContentSectionWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Introduction
-          if (concept.content.introduction != null)
+          if (concept.localizedContent[languageState]!.content.introduction !=
+              null)
             _buildSection(
               icon: Icons.lightbulb_outline_rounded,
               title: 'Introduction',
-              child: _buildTextContent(concept.content.introduction!),
+              child: _buildTextContent(
+                concept.localizedContent[languageState]!.content.introduction!,
+              ),
             ),
 
           // --- NEW: Concept Image Section ---
@@ -44,71 +49,108 @@ class ContentSectionWidget extends StatelessWidget {
           // --- END NEW ---
 
           // Definition
-          if (concept.content.definition != null)
+          if (concept.localizedContent[languageState]!.content.definition !=
+              null)
             _buildSection(
               icon: Icons.menu_book_rounded,
               title: 'Definition',
-              child: _buildDefinitionCard(concept.content.definition!),
+              child: _buildDefinitionCard(
+                concept.localizedContent[languageState]!.content.definition!,
+              ),
             ),
 
           // Examples
-          if (concept.content.examples != null &&
-              concept.content.examples!.isNotEmpty)
+          if (concept.localizedContent[languageState]!.content.examples !=
+                  null &&
+              concept
+                  .localizedContent[languageState]!
+                  .content
+                  .examples!
+                  .isNotEmpty)
             _buildSection(
               icon: Icons.psychology_rounded,
               title: 'Examples',
-              child: _buildExamples(concept.content.examples!),
+              child: _buildExamples(
+                concept.localizedContent[languageState]!.content.examples!,
+              ),
             ),
 
           // Forms (for notation)
-          if (concept.content.forms != null &&
-              concept.content.forms!.isNotEmpty)
+          if (concept.localizedContent[languageState]!.content.forms != null &&
+              concept
+                  .localizedContent[languageState]!
+                  .content
+                  .forms!
+                  .isNotEmpty)
             _buildSection(
               icon: Icons.text_fields_rounded,
               title: 'Representation Forms',
-              child: _buildForms(concept.content.forms!),
+              child: _buildForms(
+                concept.localizedContent[languageState]!.content.forms!,
+              ),
             ),
 
           // Operations
-          if (concept.content.operations != null &&
-              concept.content.operations!.isNotEmpty)
+          if (concept.localizedContent[languageState]!.content.operations !=
+                  null &&
+              concept
+                  .localizedContent[languageState]!
+                  .content
+                  .operations!
+                  .isNotEmpty)
             _buildSection(
               icon: Icons.functions_rounded,
               title: 'Operations',
-              child: _buildOperations(concept.content.operations!),
+              child: _buildOperations(
+                concept.localizedContent[languageState]!.content.operations!,
+              ),
             ),
 
           // Properties
-          if (concept.content.properties != null &&
-              concept.content.properties!.isNotEmpty)
+          if (concept.localizedContent[languageState]!.content.properties !=
+                  null &&
+              concept
+                  .localizedContent[languageState]!
+                  .content
+                  .properties!
+                  .isNotEmpty)
             _buildSection(
               icon: Icons.settings_rounded,
               title: 'Properties',
-              child: _buildProperties(concept.content.properties!),
+              child: _buildProperties(
+                concept.localizedContent[languageState]!.content.properties!,
+              ),
             ),
 
           // Laws (for De Morgan's)
-          if (concept.content.laws != null && concept.content.laws!.isNotEmpty)
+          if (concept.localizedContent[languageState]!.content.laws != null &&
+              concept.localizedContent[languageState]!.content.laws!.isNotEmpty)
             _buildSection(
               icon: Icons.gavel_rounded,
               title: 'Laws',
-              child: _buildLaws(concept.content.laws!),
+              child: _buildLaws(
+                concept.localizedContent[languageState]!.content.laws!,
+              ),
             ),
 
           // Formula
-          if (concept.content.formula != null)
+          if (concept.localizedContent[languageState]!.content.formula != null)
             _buildSection(
               icon: Icons.calculate_rounded,
               title: 'Formula',
-              child: _buildFormulaCard(concept.content.formula!),
+              child: _buildFormulaCard(
+                concept.localizedContent[languageState]!.content.formula!,
+              ),
             ),
 
           // Example with solution
-          if (concept.content.example != null)
+          if (concept.localizedContent[languageState]!.content.example != null)
             _buildSection(
               icon: Icons.design_services_rounded,
               title: 'Worked Example',
-              child: _buildWorkedExample(concept.content.example!),
+              child: _buildWorkedExample(
+                concept.localizedContent[languageState]!.content.example!,
+              ),
             ),
         ],
       ),
@@ -657,5 +699,6 @@ class ContentSectionWidget extends StatelessWidget {
       ),
     );
   }
+
   // --- END NEW ---
 }

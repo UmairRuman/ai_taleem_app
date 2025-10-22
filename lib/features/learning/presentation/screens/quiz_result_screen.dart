@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:taleem_ai/core/constants/storage_keys.dart';
 import 'package:taleem_ai/core/domain/entities/teacher_remediation_tip.dart';
 import 'package:taleem_ai/core/routes/route_names.dart';
 import 'package:taleem_ai/features/onboarding/presentation/providers/concepts_provider.dart';
@@ -110,7 +111,9 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen>
           final prereqConcept = allConcepts.firstWhere(
             (c) => c.conceptId == prereqId,
           );
-          log("Prerequisite found: ${prereqConcept.title}");
+          log(
+            "Prerequisite found: ${prereqConcept.localizedContent[AppConstants.english]!.title}",
+          );
           prereqs.add(prereqConcept);
         } catch (e) {
           log("Prerequisite not found: $prereqId");
@@ -196,7 +199,7 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen>
                         ),
                         SizedBox(height: AppDimensions.spaceM),
                         Text(
-                          'These concepts will help you master ${widget.concept.title}',
+                          'These concepts will help you master ${widget.concept.localizedContent[AppConstants.english]!.title}',
                           style: AppTextStyles.bodyMedium(
                             color: AppColors.textSecondary,
                           ),
@@ -225,7 +228,7 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen>
                             return _buildPrerequisiteCard(
                               prereq,
                               tip?.tip ??
-                                  'Review the ${prereq.title} lesson from Grade ${prereq.gradeLevel}.',
+                                  'Review the ${prereq.localizedContent[AppConstants.english]!.title} lesson from Grade ${prereq.gradeLevel}.',
                               index,
                             );
                           }),
@@ -328,7 +331,12 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(prereq.title, style: AppTextStyles.h6()),
+                          Text(
+                            prereq
+                                .localizedContent[AppConstants.english]!
+                                .title,
+                            style: AppTextStyles.h6(),
+                          ),
                           SizedBox(height: AppDimensions.spaceS / 2),
                           Container(
                             padding: EdgeInsets.symmetric(

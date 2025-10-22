@@ -1,88 +1,101 @@
+import 'dart:math';
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:taleem_ai/core/theme/app_colors.dart';
 
-Widget buildBackgroundDecorations() {
-  return SizedBox.expand(
-    // 👈 forces full width/height
-    child: Stack(
-      children: [
-        Positioned(
-          top: -80,
-          left: -80,
-          child: Container(
-            width: 250,
-            height: 250,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.primary.withOpacity(0.08),
-                  AppColors.primary.withOpacity(0.02),
-                ],
-              ),
-            ),
-          ),
+Widget buildEducationalBackground() {
+  return Positioned.fill(
+    child: Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.primary.withOpacity(0.03),
+            AppColors.secondary.withOpacity(0.02),
+            AppColors.background,
+          ],
         ),
-        Positioned(
-          top: 100,
-          right: -100,
-          child: Container(
-            width: 300,
-            height: 300,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.secondary.withOpacity(0.06),
-                  AppColors.secondary.withOpacity(0.01),
-                ],
-              ),
-            ),
-          ),
-        ),
-        Positioned(
-          bottom: -120,
-          left: -60,
-          child: Container(
-            width: 280,
-            height: 280,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.info.withOpacity(0.05),
-                  AppColors.info.withOpacity(0.01),
-                ],
-              ),
-            ),
-          ),
-        ),
-        Positioned(
-          top: 200,
-          right: 0,
-          child: Opacity(
-            opacity: 0.03,
-            child: Icon(
-              Icons.school_rounded,
-              size: 200.w,
-              color: AppColors.primary,
-            ),
-          ),
-        ),
-        Positioned(
-          bottom: 100,
-          left: 20,
-          child: Opacity(
-            opacity: 0.02,
-            child: Icon(
-              Icons.menu_book_rounded,
-              size: 180.w,
-              color: AppColors.secondary,
-            ),
-          ),
-        ),
-      ],
+      ),
+      child: CustomPaint(painter: EducationalBackgroundPainter()),
     ),
   );
+}
+
+// Custom Painter for Educational Background
+class EducationalBackgroundPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Draw grid pattern first
+    _drawGridPattern(canvas, size);
+    // Draw math symbols on top
+    _drawMathSymbols(canvas, size);
+  }
+
+  void _drawMathSymbols(Canvas canvas, Size size) {
+    final textPainter = TextPainter(
+      textAlign: TextAlign.center,
+      textDirection: ui.TextDirection.ltr, // Add this!
+    );
+
+    // Mathematical symbols
+    final symbols = [
+      // '∪',
+      // '∩',
+      // '⊆',
+      // '⊂',
+      // '∈',
+      // '∅',
+      // 'π',
+      // '∑',
+      // '∞',
+      // '√',
+      // '∫',
+      // 'Δ',
+    ];
+    final random = Random(42); // Fixed seed for consistent pattern
+
+    for (int i = 0; i < 25; i++) {
+      final x = random.nextDouble() * size.width;
+      final y = random.nextDouble() * size.height;
+      final symbol = symbols[random.nextInt(symbols.length)];
+      final opacity = 0.08 + random.nextDouble() * 0.07; // Increased opacity
+
+      textPainter.text = TextSpan(
+        text: symbol,
+        style: TextStyle(
+          fontSize: 40 + random.nextDouble() * 30,
+          color: AppColors.primary.withOpacity(opacity),
+          fontWeight: FontWeight.w300,
+        ),
+      );
+
+      textPainter.layout();
+      textPainter.paint(
+        canvas,
+        Offset(x - textPainter.width / 2, y - textPainter.height / 2),
+      );
+    }
+  }
+
+  void _drawGridPattern(Canvas canvas, Size size) {
+    final paint =
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.0
+          ..color = AppColors.primary.withOpacity(0.05); // Increased opacity
+
+    // Draw subtle diagonal lines
+    for (double i = -size.height; i < size.width; i += 80) {
+      canvas.drawLine(
+        Offset(i, 0),
+        Offset(i + size.height, size.height),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
