@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:taleem_ai/core/constants/storage_keys.dart';
 import 'package:taleem_ai/features/home/presentation/widgets/admin_access_button.dart';
 
 import '../../../../core/routes/route_names.dart';
@@ -126,7 +127,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('TaleemIE AI', style: AppTextStyles.h3()),
+        title: Text(AppConstants.appName, style: AppTextStyles.h3()),
         actions: [const AdminAccessButton(), SizedBox(width: 8.w)],
       ),
       body: Container(

@@ -32,7 +32,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   void initState() {
     super.initState();
     _initializeAnimations();
-    _navigateToNext();
+    // _navigateToNext();
   }
 
   void _initializeAnimations() {
@@ -175,7 +175,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                           ).createShader(bounds);
                                         },
                                         child: Text(
-                                          'TaleemIE AI',
+                                          AppConstants.appName,
                                           style: AppTextStyles.display1(
                                             color: Colors.white,
                                           ),
@@ -187,7 +187,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
                                       // Urdu Name
                                       Text(
-                                        'تعلیم آئی ای',
+                                        ' اِسمارْٹ  تعلیم',
                                         style: AppTextStyles.h3(
                                           color: Colors.white.withOpacity(0.95),
                                           isUrdu: true,

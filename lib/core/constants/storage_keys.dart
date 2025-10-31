@@ -24,7 +24,7 @@ class StorageKeys {
 // lib/core/constants/app_constants.dart
 class AppConstants {
   // App Info
-  static const String appName = 'TaleemIE AI';
+  static const String appName = 'Smart Education';
   static const String appVersion = '1.0.0';
   static const String packageName = 'pk.taleemie.ai';
 
