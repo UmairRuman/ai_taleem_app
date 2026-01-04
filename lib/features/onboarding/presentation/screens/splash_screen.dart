@@ -32,7 +32,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   void initState() {
     super.initState();
     _initializeAnimations();
-    // _navigateToNext();
+    _navigateToNext();
   }
 
   void _initializeAnimations() {
