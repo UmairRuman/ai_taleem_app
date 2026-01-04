@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:taleem_ai/core/constants/storage_keys.dart';
 
-import '../../../../core/domain/entities/concept.dart';
+import '../../../../core/domain/entities/concept2.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimensions.dart';
 import '../../../../core/theme/app_text_styles.dart';
 
 class ConceptCardWidget extends StatefulWidget {
-  final Concept concept;
+  final Concept2 concept;
   final Color gradeColor;
   final int index;
   final VoidCallback onTap;

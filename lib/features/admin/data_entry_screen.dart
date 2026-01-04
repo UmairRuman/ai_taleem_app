@@ -4,7 +4,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taleem_ai/core/di/injection_container.dart';
-import 'package:taleem_ai/core/domain/entities/concept.dart';
+import 'package:taleem_ai/core/domain/entities/concept2.dart';
 import 'package:taleem_ai/core/domain/entities/content.dart';
 import 'package:taleem_ai/core/domain/entities/localized_content.dart';
 import 'package:taleem_ai/core/domain/entities/quiz.dart';
@@ -14,9 +14,9 @@ class DataEntryScreen extends ConsumerWidget {
   DataEntryScreen({super.key});
 
   // This is the converted data ready to be used in your Flutter app
-  final List<Concept> conceptsData = [
+  final List<Concept2> conceptsData = [
     // Concept 1: Core Definition
-    Concept(
+    Concept2(
       conceptId: "G6_Sets_CoreDefinition",
       gradeLevel: 6,
       sequenceOrder: 1,
@@ -125,7 +125,7 @@ class DataEntryScreen extends ConsumerWidget {
     ),
 
     // Concept 2: Notation
-    Concept(
+    Concept2(
       conceptId: "G6_Sets_Notation",
       gradeLevel: 6,
       sequenceOrder: 2,
@@ -227,7 +227,7 @@ class DataEntryScreen extends ConsumerWidget {
     ),
 
     // Concept 3: Classification
-    Concept(
+    Concept2(
       conceptId: "G6_Sets_Classification",
       gradeLevel: 6,
       sequenceOrder: 3,
@@ -330,7 +330,7 @@ class DataEntryScreen extends ConsumerWidget {
     ),
 
     // Concept 4: Subsets and Universal
-    Concept(
+    Concept2(
       conceptId: "G6_Sets_SubsetsUniversal",
       gradeLevel: 6,
       sequenceOrder: 4,
@@ -385,7 +385,7 @@ class DataEntryScreen extends ConsumerWidget {
     ),
 
     // Concept 5: Venn Intro
-    Concept(
+    Concept2(
       conceptId: "G6_Sets_VennIntro",
       gradeLevel: 6,
       sequenceOrder: 5,
@@ -461,7 +461,7 @@ class DataEntryScreen extends ConsumerWidget {
     ),
 
     // Concept 6: Set Operations (Grade 7)
-    Concept(
+    Concept2(
       conceptId: "G7_Sets_SetOperations",
       gradeLevel: 7,
       sequenceOrder: 1,
@@ -582,7 +582,7 @@ class DataEntryScreen extends ConsumerWidget {
     ),
 
     // Concept 7: De Morgan's Laws
-    Concept(
+    Concept2(
       conceptId: "G7_Sets_DeMorgansIntro",
       gradeLevel: 7,
       sequenceOrder: 2,
@@ -668,7 +668,7 @@ class DataEntryScreen extends ConsumerWidget {
     ),
 
     // Concept 8: Power Set (Grade 8)
-    Concept(
+    Concept2(
       conceptId: "G8_Sets_PowerSet",
       gradeLevel: 8,
       sequenceOrder: 1,
@@ -740,7 +740,7 @@ class DataEntryScreen extends ConsumerWidget {
     ),
 
     // Concept 9: Properties
-    Concept(
+    Concept2(
       conceptId: "G8_Sets_Properties",
       gradeLevel: 8,
       sequenceOrder: 2,
@@ -825,7 +825,7 @@ class DataEntryScreen extends ConsumerWidget {
     ),
 
     // Concept 10: Word Problems
-    Concept(
+    Concept2(
       conceptId: "G8_Sets_WordProblems",
       gradeLevel: 8,
       sequenceOrder: 3,

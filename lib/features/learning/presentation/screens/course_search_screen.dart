@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:taleem_ai/core/constants/storage_keys.dart';
 import 'package:taleem_ai/features/onboarding/presentation/providers/concepts_provider.dart';
 
-import '../../../../core/domain/entities/concept.dart';
+import '../../../../core/domain/entities/concept2.dart';
 import '../../../../core/routes/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimensions.dart';
@@ -25,8 +25,8 @@ class _CourseSearchScreenState extends ConsumerState<CourseSearchScreen>
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
 
-  List<Concept> _filteredConcepts = [];
-  List<Concept> _allConcepts = [];
+  List<Concept2> _filteredConcepts = [];
+  List<Concept2> _allConcepts = [];
   String _searchQuery = '';
 
   late AnimationController _animationController;
@@ -69,7 +69,7 @@ class _CourseSearchScreenState extends ConsumerState<CourseSearchScreen>
     super.dispose();
   }
 
-  void _performSearch(String query, List<Concept> concepts) {
+  void _performSearch(String query, List<Concept2> concepts) {
     setState(() {
       _searchQuery = query;
 

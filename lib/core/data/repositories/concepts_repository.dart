@@ -1,15 +1,15 @@
 // Path: lib/core/data/repositories/concepts_repository.dart
 import 'package:taleem_ai/core/data/collections/concepts_collection.dart';
-import 'package:taleem_ai/core/domain/entities/concept.dart';
+import 'package:taleem_ai/core/domain/entities/concept2.dart';
 
 class ConceptsRepository {
   final ConceptsCollection _conceptsCollection = ConceptsCollection.instance;
 
-  Future<bool> addConcept(Concept concept) async {
+  Future<bool> addConcept(Concept2 concept) async {
     return await _conceptsCollection.addConcept(concept);
   }
 
-  Future<bool> updateConcept(Concept concept) async {
+  Future<bool> updateConcept(Concept2 concept) async {
     return await _conceptsCollection.updateConcept(concept);
   }
 
@@ -17,19 +17,19 @@ class ConceptsRepository {
     return await _conceptsCollection.deleteConcept(conceptId);
   }
 
-  Future<Concept?> getConcept(String conceptId) async {
+  Future<Concept2?> getConcept(String conceptId) async {
     return await _conceptsCollection.getConcept(conceptId);
   }
 
-  Future<List<Concept>> getAllConcepts() async {
+  Future<List<Concept2>> getAllConcepts() async {
     return await _conceptsCollection.getAllConcepts();
   }
 
-  Future<List<Concept>> getConceptsByGrade(int grade) async {
+  Future<List<Concept2>> getConceptsByGrade(int grade) async {
     return await _conceptsCollection.getConceptsByGrade(grade);
   }
 
-  Future<List<Concept>> getConceptsByTopic(String topic) async {
+  Future<List<Concept2>> getConceptsByTopic(String topic) async {
     return await _conceptsCollection.getConceptsByTopic(topic);
   }
 }

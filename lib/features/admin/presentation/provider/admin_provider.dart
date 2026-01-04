@@ -2,7 +2,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/domain/entities/concept.dart';
+import '../../../../core/domain/entities/concept2.dart';
 
 final adminRepositoryProvider = Provider<AdminRepository>((ref) {
   return AdminRepository();
@@ -11,7 +11,7 @@ final adminRepositoryProvider = Provider<AdminRepository>((ref) {
 class AdminRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<void> uploadConcepts(List<Concept> concepts) async {
+  Future<void> uploadConcepts(List<Concept2> concepts) async {
     final batch = _firestore.batch();
 
     for (var concept in concepts) {
@@ -22,7 +22,7 @@ class AdminRepository {
     await batch.commit();
   }
 
-  Future<List<Concept>> getAllConcepts() async {
+  Future<List<Concept2>> getAllConcepts() async {
     final snapshot =
         await _firestore
             .collection('concepts')
@@ -30,7 +30,7 @@ class AdminRepository {
             .orderBy('sequence_order')
             .get();
 
-    return snapshot.docs.map((doc) => Concept.fromMap(doc.data())).toList();
+    return snapshot.docs.map((doc) => Concept2.fromMap(doc.data())).toList();
   }
 
   Future<void> deleteConcept(String conceptId) async {

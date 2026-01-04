@@ -7,7 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:taleem_ai/core/routes/route_names.dart';
 import 'package:taleem_ai/shared/widgets/background.dart';
 
-import '../../../../core/domain/entities/concept.dart';
+import '../../../../core/domain/entities/concept2.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimensions.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -27,7 +27,7 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen> {
   bool _isLoading = false;
   bool _isValidJson = true;
   String _statusMessage = '';
-  List<Concept>? _parsedConcepts;
+  List<Concept2>? _parsedConcepts;
   int _uploadedCount = 0;
   bool _isSidebarOpen = false;
 
@@ -597,7 +597,7 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen> {
     );
   }
 
-  Widget _buildConceptCard(Concept concept) {
+  Widget _buildConceptCard(Concept2 concept) {
     return Container(
       margin: EdgeInsets.only(bottom: AppDimensions.spaceM),
       padding: EdgeInsets.all(AppDimensions.paddingM),

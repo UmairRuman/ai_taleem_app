@@ -11,13 +11,13 @@ import 'package:taleem_ai/core/domain/entities/teacher_remediation_tip.dart';
 import 'package:taleem_ai/core/routes/route_names.dart';
 import 'package:taleem_ai/features/onboarding/presentation/providers/concepts_provider.dart';
 
-import '../../../../core/domain/entities/concept.dart';
+import '../../../../core/domain/entities/concept2.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimensions.dart';
 import '../../../../core/theme/app_text_styles.dart';
 
 class QuizResultScreen extends ConsumerStatefulWidget {
-  final Concept concept;
+  final Concept2 concept;
   final int score;
   final int totalQuestions;
 
@@ -38,7 +38,7 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen>
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
   late ConfettiController _confettiController;
-  List<Concept> _prerequisiteConcepts = [];
+  List<Concept2> _prerequisiteConcepts = [];
   bool _isLoadingPrerequisites = false;
   bool _hasShownDialog = false;
 
@@ -90,7 +90,7 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen>
 
     try {
       final conceptsState = ref.read(conceptsProvider);
-      List<Concept> allConcepts = [];
+      List<Concept2> allConcepts = [];
 
       if (conceptsState is ConceptsLoadedState) {
         allConcepts = conceptsState.concepts;
@@ -104,7 +104,7 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen>
         }
       }
 
-      final prereqs = <Concept>[];
+      final prereqs = <Concept2>[];
 
       for (final prereqId in widget.concept.prerequisites) {
         try {
@@ -275,7 +275,7 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen>
     );
   }
 
-  Widget _buildPrerequisiteCard(Concept prereq, String tip, int index) {
+  Widget _buildPrerequisiteCard(Concept2 prereq, String tip, int index) {
     final prereqGradeColor = _getGradeColor(prereq.gradeLevel);
 
     return Container(

@@ -3,7 +3,7 @@ import 'dart:developer';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taleem_ai/core/di/injection_container.dart';
-import 'package:taleem_ai/core/domain/entities/concept.dart';
+import 'package:taleem_ai/core/domain/entities/concept2.dart';
 
 final conceptsProvider =
     NotifierProvider<ConceptsStateController, ConceptsStates>(
@@ -43,7 +43,7 @@ class ConceptsStateController extends Notifier<ConceptsStates> {
     }
   }
 
-  Future<void> addConcept(Concept concept) async {
+  Future<void> addConcept(Concept2 concept) async {
     try {
       final repo = ref.read(conceptsRepositoryProvider);
       await repo.addConcept(concept);
@@ -54,7 +54,7 @@ class ConceptsStateController extends Notifier<ConceptsStates> {
     }
   }
 
-  Future<void> updateConcept(Concept concept) async {
+  Future<void> updateConcept(Concept2 concept) async {
     try {
       final repo = ref.read(conceptsRepositoryProvider);
       await repo.updateConcept(concept);
@@ -108,12 +108,12 @@ class ConceptsInitialState extends ConceptsStates {}
 class ConceptsLoadingState extends ConceptsStates {}
 
 class ConceptsLoadedState extends ConceptsStates {
-  final List<Concept> concepts;
+  final List<Concept2> concepts;
   ConceptsLoadedState({required this.concepts});
 }
 
 class ConceptsSingleLoadedState extends ConceptsStates {
-  final Concept concept;
+  final Concept2 concept;
   ConceptsSingleLoadedState({required this.concept});
 }
 

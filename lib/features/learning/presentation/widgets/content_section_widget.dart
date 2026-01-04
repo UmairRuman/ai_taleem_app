@@ -3,13 +3,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../../../core/domain/entities/concept.dart';
+import '../../../../core/domain/entities/concept2.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimensions.dart';
 import '../../../../core/theme/app_text_styles.dart';
 
 class ContentSectionWidget extends StatelessWidget {
-  final Concept concept;
+  final Concept2 concept;
   final Color gradeColor;
   final List<String> conceptImages;
   final String languageState;
@@ -320,7 +320,7 @@ class ContentSectionWidget extends StatelessWidget {
                             ),
                           ),
                         )
-                        .toList(),
+                        ,
                   ],
                 ),
               ),

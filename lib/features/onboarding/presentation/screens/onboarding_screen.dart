@@ -186,7 +186,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                       isTabletOrDesktop ? 600.0 : constraints.maxWidth;
 
                   return Center(
-                    child: Container(
+                    child: SizedBox(
                       width: maxContentWidth,
                       child: Column(
                         children: [

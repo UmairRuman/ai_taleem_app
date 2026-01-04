@@ -11,7 +11,7 @@ import 'package:taleem_ai/features/learning/presentation/widgets/interactive_ele
 import 'package:taleem_ai/features/onboarding/presentation/providers/concepts_provider.dart';
 import 'package:taleem_ai/shared/providers/language_provider.dart';
 
-import '../../../../core/domain/entities/concept.dart';
+import '../../../../core/domain/entities/concept2.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimensions.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -355,7 +355,7 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
     );
   }
 
-  Widget _buildContent(Concept concept, String languageState) {
+  Widget _buildContent(Concept2 concept, String languageState) {
     log("Concept Image path: ${concept.images.toString()}");
     final gradeColor = _getGradeColor(concept.gradeLevel);
 
@@ -430,7 +430,7 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
     );
   }
 
-  Widget _buildTutorialCard(Concept concept, Color gradeColor) {
+  Widget _buildTutorialCard(Concept2 concept, Color gradeColor) {
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: AppDimensions.paddingL,
@@ -579,7 +579,7 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
   }
 
   Widget _buildSliverAppBar(
-    Concept concept,
+    Concept2 concept,
     Color gradeColor,
     String languageState,
   ) {
@@ -655,7 +655,7 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
   }
 
   Widget _buildHeroSection(
-    Concept concept,
+    Concept2 concept,
     Color gradeColor,
     String languageState,
   ) {
@@ -736,7 +736,7 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
     );
   }
 
-  Widget _buildPrerequisitesSection(Concept concept) {
+  Widget _buildPrerequisitesSection(Concept2 concept) {
     return Container(
       padding: EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
@@ -786,7 +786,7 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
     );
   }
 
-  Widget _buildQuizButton(Concept concept, Color gradeColor) {
+  Widget _buildQuizButton(Concept2 concept, Color gradeColor) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
       child: Material(

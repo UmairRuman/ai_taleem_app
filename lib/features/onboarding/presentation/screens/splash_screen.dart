@@ -138,7 +138,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     final maxContentWidth =
                         isTabletOrDesktop ? 500.0 : constraints.maxWidth;
 
-                    return Container(
+                    return SizedBox(
                       width: maxContentWidth,
                       child: Column(
                         mainAxisSize: MainAxisSize.min,

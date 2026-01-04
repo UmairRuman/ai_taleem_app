@@ -2,7 +2,7 @@
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:taleem_ai/core/domain/entities/concept.dart'; // Assuming entity path
+import 'package:taleem_ai/core/domain/entities/concept2.dart'; // Assuming entity path
 
 class ConceptsCollection {
   static final ConceptsCollection instance = ConceptsCollection._internal();
@@ -14,7 +14,7 @@ class ConceptsCollection {
     return instance;
   }
 
-  Future<bool> addConcept(Concept concept) async {
+  Future<bool> addConcept(Concept2 concept) async {
     try {
       await conceptsCollection.doc(concept.conceptId).set(concept.toMap());
       log('Concept added successfully: ${concept.conceptId}');
@@ -25,7 +25,7 @@ class ConceptsCollection {
     }
   }
 
-  Future<bool> updateConcept(Concept concept) async {
+  Future<bool> updateConcept(Concept2 concept) async {
     try {
       await conceptsCollection.doc(concept.conceptId).update(concept.toMap());
       log('Concept updated successfully: ${concept.conceptId}');
@@ -47,11 +47,11 @@ class ConceptsCollection {
     }
   }
 
-  Future<Concept?> getConcept(String conceptId) async {
+  Future<Concept2?> getConcept(String conceptId) async {
     try {
       DocumentSnapshot snapshot = await conceptsCollection.doc(conceptId).get();
       if (snapshot.exists) {
-        return Concept.fromMap(snapshot.data() as Map<String, dynamic>);
+        return Concept2.fromMap(snapshot.data() as Map<String, dynamic>);
       }
       log('Concept not found: $conceptId');
       return null;
@@ -61,12 +61,12 @@ class ConceptsCollection {
     }
   }
 
-  Future<List<Concept>> getAllConcepts() async {
-    List<Concept> concepts = [];
+  Future<List<Concept2>> getAllConcepts() async {
+    List<Concept2> concepts = [];
     try {
       QuerySnapshot snapshot = await conceptsCollection.get();
       for (var doc in snapshot.docs) {
-        concepts.add(Concept.fromMap(doc.data() as Map<String, dynamic>));
+        concepts.add(Concept2.fromMap(doc.data() as Map<String, dynamic>));
       }
       log('Fetched ${concepts.length} concepts');
       return concepts;
@@ -77,13 +77,13 @@ class ConceptsCollection {
   }
 
   // Additional useful method: Get concepts by grade
-  Future<List<Concept>> getConceptsByGrade(int grade) async {
-    List<Concept> concepts = [];
+  Future<List<Concept2>> getConceptsByGrade(int grade) async {
+    List<Concept2> concepts = [];
     try {
       QuerySnapshot snapshot =
           await conceptsCollection.where('grade_level', isEqualTo: grade).get();
       for (var doc in snapshot.docs) {
-        concepts.add(Concept.fromMap(doc.data() as Map<String, dynamic>));
+        concepts.add(Concept2.fromMap(doc.data() as Map<String, dynamic>));
       }
       log('Fetched ${concepts.length} concepts for grade $grade');
       return concepts;
@@ -94,13 +94,13 @@ class ConceptsCollection {
   }
 
   // Additional useful method: Get concepts by topic
-  Future<List<Concept>> getConceptsByTopic(String topic) async {
-    List<Concept> concepts = [];
+  Future<List<Concept2>> getConceptsByTopic(String topic) async {
+    List<Concept2> concepts = [];
     try {
       QuerySnapshot snapshot =
           await conceptsCollection.where('topic', isEqualTo: topic).get();
       for (var doc in snapshot.docs) {
-        concepts.add(Concept.fromMap(doc.data() as Map<String, dynamic>));
+        concepts.add(Concept2.fromMap(doc.data() as Map<String, dynamic>));
       }
       log('Fetched ${concepts.length} concepts for topic $topic');
       return concepts;

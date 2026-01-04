@@ -9,7 +9,7 @@ import 'package:taleem_ai/core/utils/answer_validator.dart';
 import 'package:taleem_ai/features/onboarding/presentation/providers/concepts_provider.dart';
 import 'package:taleem_ai/shared/providers/language_provider.dart';
 
-import '../../../../core/domain/entities/concept.dart';
+import '../../../../core/domain/entities/concept2.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../widgets/quiz_question_widget.dart';
 import 'quiz_result_screen.dart';
@@ -26,7 +26,7 @@ class ConceptQuizScreen extends ConsumerStatefulWidget {
 class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
     with TickerProviderStateMixin {
   int _currentQuestionIndex = 0;
-  Map<int, String> _answers = {};
+  final Map<int, String> _answers = {};
   int _score = 0;
 
   late AnimationController _progressController;
@@ -102,7 +102,7 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
     }
   }
 
-  void _nextQuestion(Concept concept, String languageState) {
+  void _nextQuestion(Concept2 concept, String languageState) {
     final totalQuestions =
         concept.localizedContent[languageState]!.practiceQuiz.length;
 
@@ -166,7 +166,7 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
     );
   }
 
-  Widget _buildQuizContent(Concept concept, String languageState) {
+  Widget _buildQuizContent(Concept2 concept, String languageState) {
     final gradeColor = _getGradeColor(concept.gradeLevel);
     final questions = concept.localizedContent[languageState]!.practiceQuiz;
 
@@ -264,7 +264,7 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
   }
 
   Widget _buildHeader(
-    Concept concept,
+    Concept2 concept,
     Color gradeColor,
     int totalQuestions,
     String languageState,
@@ -343,7 +343,7 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
   }
 
   Widget _buildNavigationButtons(
-    Concept concept,
+    Concept2 concept,
     Color gradeColor,
     String languageState,
   ) {
