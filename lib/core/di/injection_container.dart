@@ -1,7 +1,7 @@
 // Path: lib/core/di/injection_container.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taleem_ai/core/data/collections/institutions_collection.dart';
-import 'package:taleem_ai/core/data/repositories/concepts_repository.dart';
+import 'package:taleem_ai/core/data/repositories/concepts_repository_2.dart';
 import 'package:taleem_ai/core/data/repositories/institutions_repository.dart';
 import 'package:taleem_ai/core/data/repositories/lessons_repository.dart';
 import 'package:taleem_ai/core/data/repositories/progress_repository.dart';
@@ -25,8 +25,8 @@ final institutionRepositoryProvider = Provider<InstitutionRepository>(
   (ref) => InstitutionRepository(ref.read(institutionsCollectionProvider)),
 );
 
-final conceptsRepositoryProvider = Provider<ConceptsRepository>(
-  (ref) => ConceptsRepository(),
+final conceptsRepositoryProvider = Provider<ConceptsRepository2>(
+  (ref) => ConceptsRepository2(),
 );
 
 final lessonsRepositoryProvider = Provider<LessonsRepository>(
