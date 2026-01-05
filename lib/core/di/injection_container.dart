@@ -1,6 +1,11 @@
 // Path: lib/core/di/injection_container.dart
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:taleem_ai/core/data/collections/concepts_content_collection.dart';
+import 'package:taleem_ai/core/data/collections/concepts_metadata_collection.dart';
 import 'package:taleem_ai/core/data/collections/institutions_collection.dart';
+import 'package:taleem_ai/core/data/collections/search_index_collection.dart';
+import 'package:taleem_ai/core/data/repositories/concepts_repository.dart';
 import 'package:taleem_ai/core/data/repositories/concepts_repository_2.dart';
 import 'package:taleem_ai/core/data/repositories/institutions_repository.dart';
 import 'package:taleem_ai/core/data/repositories/lessons_repository.dart';
@@ -25,7 +30,7 @@ final institutionRepositoryProvider = Provider<InstitutionRepository>(
   (ref) => InstitutionRepository(ref.read(institutionsCollectionProvider)),
 );
 
-final conceptsRepositoryProvider = Provider<ConceptsRepository2>(
+final conceptsRepositoryProvider2 = Provider<ConceptsRepository2>(
   (ref) => ConceptsRepository2(),
 );
 
@@ -48,3 +53,43 @@ final progressRepositoryProvider = Provider<ProgressRepository>(
 final recommendationsRepositoryProvider = Provider<RecommendationsRepository>(
   (ref) => RecommendationsRepository(),
 );
+
+
+final firestoreProvider = Provider<FirebaseFirestore>((ref) {
+  return FirebaseFirestore.instance;
+});
+
+// ============================================
+// COLLECTION PROVIDERS
+// ============================================
+
+final conceptsMetadataCollectionProvider = Provider<ConceptsMetadataCollection>((ref) {
+  final firestore = ref.read(firestoreProvider);
+  return ConceptsMetadataCollection(firestore: firestore);
+});
+
+final conceptsContentCollectionProvider = Provider<ConceptsContentCollection>((ref) {
+  final firestore = ref.read(firestoreProvider);
+  return ConceptsContentCollection(firestore: firestore);
+});
+
+final searchIndexCollectionProvider = Provider<SearchIndexCollection>((ref) {
+  final firestore = ref.read(firestoreProvider);
+  return SearchIndexCollection(firestore: firestore);
+});
+
+// ============================================
+// REPOSITORY PROVIDER
+// ============================================
+
+final conceptsRepositoryProvider = Provider<ConceptsRepository>((ref) {
+  final metadataCollection = ref.read(conceptsMetadataCollectionProvider);
+  final contentCollection = ref.read(conceptsContentCollectionProvider);
+  final searchIndexCollection = ref.read(searchIndexCollectionProvider);
+
+  return ConceptsRepository(
+    metadataCollection: metadataCollection,
+    contentCollection: contentCollection,
+    searchIndexCollection: searchIndexCollection,
+  );
+});

@@ -9,7 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:taleem_ai/core/constants/storage_keys.dart';
 import 'package:taleem_ai/core/domain/entities/teacher_remediation_tip.dart';
 import 'package:taleem_ai/core/routes/route_names.dart';
-import 'package:taleem_ai/features/onboarding/presentation/providers/concepts_provider.dart';
+import 'package:taleem_ai/core/providers/concepts_provider_2.dart';
 
 import '../../../../core/domain/entities/concept2.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -89,15 +89,15 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen>
     });
 
     try {
-      final conceptsState = ref.read(conceptsProvider);
+      final conceptsState = ref.read(conceptsProvider2);
       List<Concept2> allConcepts = [];
 
       if (conceptsState is ConceptsLoadedState) {
         allConcepts = conceptsState.concepts;
         log("Concepts already loaded: ${allConcepts.length}");
       } else {
-        await ref.read(conceptsProvider.notifier).getAllConcepts();
-        final newState = ref.read(conceptsProvider);
+        await ref.read(conceptsProvider2.notifier).getAllConcepts();
+        final newState = ref.read(conceptsProvider2);
         if (newState is ConceptsLoadedState) {
           allConcepts = newState.concepts;
           log("Concepts loaded: ${allConcepts.length}");

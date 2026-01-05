@@ -1,22 +1,24 @@
 // lib/features/learning/presentation/widgets/concept_card_widget.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:taleem_ai/core/constants/storage_keys.dart';
+import 'package:taleem_ai/core/domain/entities/conceptMetadata.dart';
 
-import '../../../../core/domain/entities/concept2.dart';
+// NEW: Import ConceptMetadata instead of Concept2
+
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimensions.dart';
 import '../../../../core/theme/app_text_styles.dart';
 
 class ConceptCardWidget extends StatefulWidget {
-  final Concept2 concept;
+  // NEW: Use ConceptMetadata instead of Concept2
+  final ConceptMetadata metadata;
   final Color gradeColor;
   final int index;
   final VoidCallback onTap;
 
   const ConceptCardWidget({
     super.key,
-    required this.concept,
+    required this.metadata,
     required this.gradeColor,
     required this.index,
     required this.onTap,
@@ -52,12 +54,16 @@ class _ConceptCardWidgetState extends State<ConceptCardWidget>
     super.dispose();
   }
 
+  // NEW: Updated to use metadata.difficultyLevel
   Color _getDifficultyColor() {
-    switch (widget.concept.difficulty.toLowerCase()) {
+    switch (widget.metadata.difficultyLevel.toLowerCase()) {
+      case 'basic':
       case 'easy':
         return AppColors.easy;
+      case 'intermediate':
       case 'medium':
         return AppColors.medium;
+      case 'advanced':
       case 'hard':
         return AppColors.hard;
       default:
@@ -65,16 +71,34 @@ class _ConceptCardWidgetState extends State<ConceptCardWidget>
     }
   }
 
+  // NEW: Updated to use metadata.difficultyLevel
   IconData _getDifficultyIcon() {
-    switch (widget.concept.difficulty.toLowerCase()) {
+    switch (widget.metadata.difficultyLevel.toLowerCase()) {
+      case 'basic':
       case 'easy':
         return Icons.sentiment_satisfied_rounded;
+      case 'intermediate':
       case 'medium':
         return Icons.sentiment_neutral_rounded;
+      case 'advanced':
       case 'hard':
         return Icons.local_fire_department_rounded;
       default:
         return Icons.help_outline_rounded;
+    }
+  }
+
+  // NEW: Display difficulty in user-friendly format
+  String _getDifficultyLabel() {
+    switch (widget.metadata.difficultyLevel.toLowerCase()) {
+      case 'basic':
+        return 'Easy';
+      case 'intermediate':
+        return 'Medium';
+      case 'advanced':
+        return 'Hard';
+      default:
+        return widget.metadata.difficultyLevel;
     }
   }
 
@@ -163,7 +187,7 @@ class _ConceptCardWidgetState extends State<ConceptCardWidget>
                   ),
                   child: Center(
                     child: Text(
-                      '${widget.concept.sequenceOrder}',
+                      '${widget.metadata.sequenceOrder}',
                       style: AppTextStyles.h4(color: Colors.white),
                     ),
                   ),
@@ -176,13 +200,10 @@ class _ConceptCardWidgetState extends State<ConceptCardWidget>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Title
+                      // NEW: Title from conceptId (formatted)
+                      // The actual title will be loaded when user opens the concept
                       Text(
-                        widget
-                                .concept
-                                .localizedContent[AppConstants.english]
-                                ?.title ??
-                            'Untitled Concept',
+                        _formatConceptTitle(widget.metadata.conceptId),
                         style: AppTextStyles.h4(),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -203,7 +224,7 @@ class _ConceptCardWidgetState extends State<ConceptCardWidget>
                           ),
                         ),
                         child: Text(
-                          widget.concept.topic,
+                          widget.metadata.topic,
                           style: AppTextStyles.caption(
                             color: widget.gradeColor,
                           ).copyWith(fontWeight: FontWeight.w600),
@@ -218,7 +239,7 @@ class _ConceptCardWidgetState extends State<ConceptCardWidget>
                           // Difficulty
                           _buildStatItem(
                             icon: _getDifficultyIcon(),
-                            label: widget.concept.difficulty,
+                            label: _getDifficultyLabel(),
                             color: _getDifficultyColor(),
                           ),
 
@@ -227,7 +248,7 @@ class _ConceptCardWidgetState extends State<ConceptCardWidget>
                           // Duration
                           _buildStatItem(
                             icon: Icons.access_time_rounded,
-                            label: '${widget.concept.estimatedTimeMinutes} min',
+                            label: '${widget.metadata.estimatedTimeMinutes} min',
                             color: AppColors.textSecondary,
                           ),
 
@@ -242,42 +263,50 @@ class _ConceptCardWidgetState extends State<ConceptCardWidget>
                         ],
                       ),
 
-                      // Prerequisites badge
-                      if (widget.concept.prerequisites.isNotEmpty) ...[
-                        SizedBox(height: AppDimensions.spaceM),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: AppDimensions.paddingM,
-                            vertical: AppDimensions.paddingXS,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.warning.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(
-                              AppDimensions.radiusS,
+                      // NEW: Additional metadata badges
+                      SizedBox(height: AppDimensions.spaceM),
+                      Wrap(
+                        spacing: AppDimensions.spaceS,
+                        runSpacing: AppDimensions.spaceS,
+                        children: [
+                          // Prerequisites badge
+                          if (widget.metadata.hasPrerequisites)
+                            _buildInfoBadge(
+                              icon: Icons.link_rounded,
+                              label:
+                                  'Requires ${widget.metadata.prerequisites.length} prerequisite(s)',
+                              color: AppColors.warning,
+                              backgroundColor: AppColors.warning.withOpacity(0.1),
                             ),
-                            border: Border.all(
-                              color: AppColors.warning.withOpacity(0.3),
+
+                          // Quiz questions badge
+                          if (widget.metadata.quizQuestionCount > 0)
+                            _buildInfoBadge(
+                              icon: Icons.quiz_rounded,
+                              label: '${widget.metadata.quizQuestionCount} questions',
+                              color: AppColors.primary,
+                              backgroundColor: AppColors.primary.withOpacity(0.1),
                             ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.link_rounded,
-                                size: 14.w,
-                                color: AppColors.warning,
-                              ),
-                              SizedBox(width: AppDimensions.spaceXS),
-                              Text(
-                                'Requires ${widget.concept.prerequisites.length} prerequisite(s)',
-                                style: AppTextStyles.caption(
-                                  color: AppColors.warning,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+
+                          // Examples badge
+                          if (widget.metadata.hasExamples)
+                            _buildInfoBadge(
+                              icon: Icons.lightbulb_outline_rounded,
+                              label: 'Examples',
+                              color: AppColors.success,
+                              backgroundColor: AppColors.success.withOpacity(0.1),
+                            ),
+
+                          // Urdu available badge
+                          if (widget.metadata.hasUrdu)
+                            _buildInfoBadge(
+                              icon: Icons.translate_rounded,
+                              label: 'اردو',
+                              color: widget.gradeColor,
+                              backgroundColor: widget.gradeColor.withOpacity(0.1),
+                            ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -302,5 +331,55 @@ class _ConceptCardWidgetState extends State<ConceptCardWidget>
         Text(label, style: AppTextStyles.caption(color: color)),
       ],
     );
+  }
+
+  // NEW: Info badge widget for additional metadata
+  Widget _buildInfoBadge({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required Color backgroundColor,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppDimensions.paddingM,
+        vertical: AppDimensions.paddingXS,
+      ),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14.w, color: color),
+          SizedBox(width: AppDimensions.spaceXS),
+          Text(
+            label,
+            style: AppTextStyles.caption(color: color),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // NEW: Format concept ID into readable title
+  // Example: "alg_g6_L1_patterns" -> "Patterns"
+  String _formatConceptTitle(String conceptId) {
+    // Extract the last part after the last underscore
+    final parts = conceptId.split('_');
+    if (parts.isEmpty) return conceptId;
+
+    // Get the last meaningful part
+    String lastPart = parts.last;
+
+    // Capitalize first letter and replace underscores with spaces
+    return lastPart
+        .split('_')
+        .map((word) => word.isEmpty
+            ? ''
+            : word[0].toUpperCase() + word.substring(1))
+        .join(' ');
   }
 }

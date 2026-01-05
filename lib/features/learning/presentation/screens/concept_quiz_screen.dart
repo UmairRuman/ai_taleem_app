@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:taleem_ai/core/domain/entities/quiz.dart';
 import 'package:taleem_ai/core/utils/answer_validator.dart';
-import 'package:taleem_ai/features/onboarding/presentation/providers/concepts_provider.dart';
+import 'package:taleem_ai/core/providers/concepts_provider_2.dart';
 import 'package:taleem_ai/shared/providers/language_provider.dart';
 
 import '../../../../core/domain/entities/concept2.dart';
@@ -42,7 +42,7 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
 
     // Fetch concept
     Future.microtask(() {
-      ref.read(conceptsProvider.notifier).getConcept(widget.conceptId);
+      ref.read(conceptsProvider2.notifier).getConcept(widget.conceptId);
     });
   }
 
@@ -154,7 +154,7 @@ class _ConceptQuizScreenState extends ConsumerState<ConceptQuizScreen>
   @override
   Widget build(BuildContext context) {
     final languageState = ref.watch(languageProvider);
-    final conceptState = ref.watch(conceptsProvider);
+    final conceptState = ref.watch(conceptsProvider2);
 
     return Scaffold(
       body:

@@ -888,7 +888,7 @@ class DataEntryScreen extends ConsumerWidget {
 
   Future<void> _deleteOldCollection(WidgetRef ref) async {
     try {
-      final repo = ref.read(conceptsRepositoryProvider);
+      final repo = ref.read(conceptsRepositoryProvider2);
       final allConcepts = await repo.getAllConcepts();
 
       log('Found ${allConcepts.length} concepts to delete');
@@ -905,7 +905,7 @@ class DataEntryScreen extends ConsumerWidget {
   }
 
   Future<void> _pushData(WidgetRef ref) async {
-    final repo = ref.read(conceptsRepositoryProvider);
+    final repo = ref.read(conceptsRepositoryProvider2);
     int successCount = 0;
     int failCount = 0;
 

@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:taleem_ai/core/constants/storage_keys.dart';
-import 'package:taleem_ai/features/onboarding/presentation/providers/concepts_provider.dart';
+import 'package:taleem_ai/core/domain/entities/conceptMetadata.dart';
+import 'package:taleem_ai/core/providers/concepts_metadata_provider.dart';
+import 'package:taleem_ai/core/providers/language_provider.dart';
 
-import '../../../../core/domain/entities/concept2.dart';
+
 import '../../../../core/routes/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimensions.dart';
@@ -25,8 +26,9 @@ class _CourseSearchScreenState extends ConsumerState<CourseSearchScreen>
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
 
-  List<Concept2> _filteredConcepts = [];
-  List<Concept2> _allConcepts = [];
+  // NEW: Use ConceptMetadata instead of Concept2
+  List<ConceptMetadata> _filteredMetadata = [];
+  List<ConceptMetadata> _allMetadata = [];
   String _searchQuery = '';
 
   late AnimationController _animationController;
@@ -42,9 +44,9 @@ class _CourseSearchScreenState extends ConsumerState<CourseSearchScreen>
       _searchFocusNode.requestFocus();
     });
 
-    // Load all concepts
+    // NEW: Load all metadata (lightweight)
     Future.microtask(() {
-      ref.read(conceptsProvider.notifier).getAllConcepts();
+      ref.read(conceptsMetadataProvider.notifier).getAllMetadata();
     });
   }
 
@@ -69,76 +71,48 @@ class _CourseSearchScreenState extends ConsumerState<CourseSearchScreen>
     super.dispose();
   }
 
-  void _performSearch(String query, List<Concept2> concepts) {
+  // NEW: Simplified search - searches through metadata only
+  void _performSearch(String query, List<ConceptMetadata> metadataList) {
     setState(() {
       _searchQuery = query;
 
       if (query.isEmpty) {
-        _filteredConcepts = [];
+        _filteredMetadata = [];
         return;
       }
 
       final lowercaseQuery = query.toLowerCase();
 
-      _filteredConcepts =
-          concepts.where((concept) {
-            // Get localized content safely
-            final localizedContent =
-                concept.localizedContent[AppConstants.english];
+      _filteredMetadata = metadataList.where((metadata) {
+        // Search in concept ID (contains topic/grade info)
+        final idMatch = metadata.conceptId.toLowerCase().contains(lowercaseQuery);
 
-            // Search in title
-            final titleMatch =
-                localizedContent?.title.toLowerCase().contains(
-                  lowercaseQuery,
-                ) ??
-                false;
+        // Search in topic
+        final topicMatch = metadata.topic.toLowerCase().contains(lowercaseQuery);
 
-            // Search in topic
-            final topicMatch = concept.topic.toLowerCase().contains(
-              lowercaseQuery,
-            );
+        // Search in grade
+        final gradeMatch = 'grade ${metadata.gradeLevel}'.contains(lowercaseQuery);
 
-            // Search in grade
-            final gradeMatch = 'grade ${concept.gradeLevel}'.contains(
-              lowercaseQuery,
-            );
+        // Search in difficulty
+        final difficultyMatch =
+            metadata.difficultyLevel.toLowerCase().contains(lowercaseQuery);
 
-            // Search in content introduction
-            final introMatch =
-                localizedContent?.content.introduction?.toLowerCase().contains(
-                  lowercaseQuery,
-                ) ??
-                false;
+        // Search in glossary terms (if concept defines any)
+        final glossaryMatch = metadata.definesGlossaryTerms.any(
+          (term) => term.toLowerCase().contains(lowercaseQuery),
+        );
 
-            // Search in definition
-            final defMatch =
-                localizedContent?.content.definition?.toLowerCase().contains(
-                  lowercaseQuery,
-                ) ??
-                false;
+        return idMatch || topicMatch || gradeMatch || difficultyMatch || glossaryMatch;
+      }).toList();
 
-            return titleMatch ||
-                topicMatch ||
-                gradeMatch ||
-                introMatch ||
-                defMatch;
-          }).toList();
+      // Sort by relevance
+      _filteredMetadata.sort((a, b) {
+        // Topic matches first
+        final aTopicMatch = a.topic.toLowerCase().contains(lowercaseQuery);
+        final bTopicMatch = b.topic.toLowerCase().contains(lowercaseQuery);
 
-      // Sort by relevance (title matches first)
-      _filteredConcepts.sort((a, b) {
-        final aLocalizedContent = a.localizedContent[AppConstants.english];
-        final bLocalizedContent = b.localizedContent[AppConstants.english];
-
-        final aTitle =
-            aLocalizedContent?.title.toLowerCase().contains(lowercaseQuery) ??
-            false;
-
-        final bTitle =
-            bLocalizedContent?.title.toLowerCase().contains(lowercaseQuery) ??
-            false;
-
-        if (aTitle && !bTitle) return -1;
-        if (!aTitle && bTitle) return 1;
+        if (aTopicMatch && !bTopicMatch) return -1;
+        if (!aTopicMatch && bTopicMatch) return 1;
 
         // Then by sequence order
         return a.sequenceOrder.compareTo(b.sequenceOrder);
@@ -161,11 +135,13 @@ class _CourseSearchScreenState extends ConsumerState<CourseSearchScreen>
 
   @override
   Widget build(BuildContext context) {
-    final conceptsState = ref.watch(conceptsProvider);
+    // NEW: Watch metadata provider
+    final metadataState = ref.watch(conceptsMetadataProvider);
+    final currentLanguage = ref.watch(languageProvider).languageCode;
 
-    // Update all concepts when loaded
-    if (conceptsState is ConceptsLoadedState) {
-      _allConcepts = conceptsState.concepts;
+    // Update all metadata when loaded
+    if (metadataState is ConceptsMetadataLoadedState) {
+      _allMetadata = metadataState.metadataList;
     }
 
     return Scaffold(
@@ -185,11 +161,11 @@ class _CourseSearchScreenState extends ConsumerState<CourseSearchScreen>
         child: SafeArea(
           child: Column(
             children: [
-              // Search header
-              _buildSearchHeader(),
+              // Search header (with language toggle)
+              _buildSearchHeader(currentLanguage),
 
               // Search results or empty state
-              Expanded(child: _buildContent(conceptsState)),
+              Expanded(child: _buildContent(metadataState)),
             ],
           ),
         ),
@@ -197,7 +173,7 @@ class _CourseSearchScreenState extends ConsumerState<CourseSearchScreen>
     );
   }
 
-  Widget _buildSearchHeader() {
+  Widget _buildSearchHeader(String currentLanguage) {
     return Container(
       padding: EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
@@ -254,20 +230,19 @@ class _CourseSearchScreenState extends ConsumerState<CourseSearchScreen>
                       color: AppColors.primary,
                       size: 24.w,
                     ),
-                    suffixIcon:
-                        _searchQuery.isNotEmpty
-                            ? IconButton(
-                              icon: Icon(
-                                Icons.clear_rounded,
-                                color: AppColors.textSecondary,
-                                size: 20.w,
-                              ),
-                              onPressed: () {
-                                _searchController.clear();
-                                _performSearch('', _allConcepts);
-                              },
-                            )
-                            : null,
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: Icon(
+                              Icons.clear_rounded,
+                              color: AppColors.textSecondary,
+                              size: 20.w,
+                            ),
+                            onPressed: () {
+                              _searchController.clear();
+                              _performSearch('', _allMetadata);
+                            },
+                          )
+                        : null,
                     filled: true,
                     fillColor: AppColors.background,
                     border: OutlineInputBorder(
@@ -282,8 +257,46 @@ class _CourseSearchScreenState extends ConsumerState<CourseSearchScreen>
                     ),
                   ),
                   style: AppTextStyles.bodyLarge(),
-                  onChanged: (query) => _performSearch(query, _allConcepts),
+                  onChanged: (query) => _performSearch(query, _allMetadata),
                   textInputAction: TextInputAction.search,
+                ),
+              ),
+
+              // NEW: Language toggle button
+              SizedBox(width: AppDimensions.spaceS),
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    ref.read(languageProvider.notifier).toggleLanguage();
+                  },
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+                  child: Container(
+                    padding: EdgeInsets.all(AppDimensions.paddingS),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceVariant,
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radiusL,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.language_rounded,
+                          color: AppColors.primary,
+                          size: 20.w,
+                        ),
+                        SizedBox(width: 4.w),
+                        Text(
+                          currentLanguage.toUpperCase(),
+                          style: AppTextStyles.bodySmall(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -292,12 +305,29 @@ class _CourseSearchScreenState extends ConsumerState<CourseSearchScreen>
           // Search stats
           if (_searchQuery.isNotEmpty) ...[
             SizedBox(height: AppDimensions.spaceM),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Found ${_filteredConcepts.length} result${_filteredConcepts.length != 1 ? 's' : ''}',
-                style: AppTextStyles.bodySmall(color: AppColors.textSecondary),
-              ),
+            Row(
+              children: [
+                // Results count
+                Expanded(
+                  child: Text(
+                    'Found ${_filteredMetadata.length} result${_filteredMetadata.length != 1 ? 's' : ''}',
+                    style: AppTextStyles.bodySmall(color: AppColors.textSecondary),
+                  ),
+                ),
+
+                // Filter chips (if needed)
+                if (_filteredMetadata.isNotEmpty) ...[
+                  _buildFilterChip(
+                    'By Grade',
+                    Icons.school_rounded,
+                  ),
+                  SizedBox(width: AppDimensions.spaceS),
+                  _buildFilterChip(
+                    'By Topic',
+                    Icons.category_rounded,
+                  ),
+                ],
+              ],
             ),
           ],
         ],
@@ -305,12 +335,53 @@ class _CourseSearchScreenState extends ConsumerState<CourseSearchScreen>
     );
   }
 
-  Widget _buildContent(ConceptsStates state) {
-    if (state is ConceptsLoadingState) {
+  Widget _buildFilterChip(String label, IconData icon) {
+    return InkWell(
+      onTap: () {
+        // Show filter bottom sheet
+        _showFilterBottomSheet();
+      },
+      borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: AppDimensions.paddingM,
+          vertical: AppDimensions.paddingXS,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16.w, color: AppColors.primary),
+            SizedBox(width: AppDimensions.spaceXS),
+            Text(
+              label,
+              style: AppTextStyles.caption(color: AppColors.textPrimary),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showFilterBottomSheet() {
+    
+    // Can use conceptsFilterProvider here
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Filter feature coming soon')),
+    );
+  }
+
+  // NEW: Updated to handle metadata states
+  Widget _buildContent(ConceptsMetadataState state) {
+    if (state is ConceptsMetadataLoadingState) {
       return Center(child: CircularProgressIndicator(color: AppColors.primary));
     }
 
-    if (state is ConceptsErrorState) {
+    if (state is ConceptsMetadataErrorState) {
       return _buildError(state.error);
     }
 
@@ -318,7 +389,7 @@ class _CourseSearchScreenState extends ConsumerState<CourseSearchScreen>
       return _buildEmptySearch();
     }
 
-    if (_filteredConcepts.isEmpty) {
+    if (_filteredMetadata.isEmpty) {
       return _buildNoResults();
     }
 
@@ -344,7 +415,7 @@ class _CourseSearchScreenState extends ConsumerState<CourseSearchScreen>
           Padding(
             padding: EdgeInsets.symmetric(horizontal: AppDimensions.paddingXL),
             child: Text(
-              'Try searching by:\n• Concept title\n• Topic (e.g., "Sets")\n• Grade level\n• Keywords from content',
+              'Try searching by:\n• Topic (e.g., "Algebra", "Sets")\n• Grade level (e.g., "Grade 6")\n• Difficulty (e.g., "Basic", "Advanced")\n• Keywords from concepts',
               style: AppTextStyles.bodyMedium(color: AppColors.textTertiary),
               textAlign: TextAlign.center,
             ),
@@ -378,6 +449,26 @@ class _CourseSearchScreenState extends ConsumerState<CourseSearchScreen>
               textAlign: TextAlign.center,
             ),
           ),
+          SizedBox(height: AppDimensions.spaceL),
+          ElevatedButton.icon(
+            onPressed: () {
+              _searchController.clear();
+              _performSearch('', _allMetadata);
+            },
+            icon: const Icon(Icons.clear_all_rounded),
+            label: const Text('Clear Search'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(
+                horizontal: AppDimensions.paddingL,
+                vertical: AppDimensions.paddingM,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -388,18 +479,18 @@ class _CourseSearchScreenState extends ConsumerState<CourseSearchScreen>
       opacity: _fadeAnimation,
       child: ListView.builder(
         padding: EdgeInsets.all(AppDimensions.paddingL),
-        itemCount: _filteredConcepts.length,
+        itemCount: _filteredMetadata.length,
         itemBuilder: (context, index) {
-          final concept = _filteredConcepts[index];
-          final gradeColor = _getGradeColor(concept.gradeLevel);
+          final metadata = _filteredMetadata[index];
+          final gradeColor = _getGradeColor(metadata.gradeLevel);
 
           return ConceptCardWidget(
-            concept: concept,
+            metadata: metadata, // Pass metadata
             gradeColor: gradeColor,
             index: index,
             onTap: () {
               context.push(
-                '${RouteNames.conceptDetailScreen}/${concept.conceptId}',
+                '${RouteNames.conceptDetailScreen}/${metadata.conceptId}',
               );
             },
           );
@@ -417,10 +508,24 @@ class _CourseSearchScreenState extends ConsumerState<CourseSearchScreen>
           SizedBox(height: AppDimensions.spaceL),
           Text('Failed to load concepts', style: AppTextStyles.h4()),
           SizedBox(height: AppDimensions.spaceS),
-          Text(
-            error,
-            style: AppTextStyles.bodyMedium(color: AppColors.textSecondary),
-            textAlign: TextAlign.center,
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppDimensions.paddingXL),
+            child: Text(
+              error,
+              style: AppTextStyles.bodyMedium(color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          SizedBox(height: AppDimensions.spaceL),
+          ElevatedButton.icon(
+            onPressed: () {
+              ref.read(conceptsMetadataProvider.notifier).getAllMetadata();
+            },
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('Retry'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+            ),
           ),
         ],
       ),

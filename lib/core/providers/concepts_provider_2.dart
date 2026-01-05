@@ -5,12 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taleem_ai/core/di/injection_container.dart';
 import 'package:taleem_ai/core/domain/entities/concept2.dart';
 
-final conceptsProvider =
-    NotifierProvider<ConceptsStateController, ConceptsStates>(
-      ConceptsStateController.new,
+final conceptsProvider2 =
+    NotifierProvider<ConceptsStateController2, ConceptsStates>(
+      ConceptsStateController2.new,
     );
 
-class ConceptsStateController extends Notifier<ConceptsStates> {
+class ConceptsStateController2 extends Notifier<ConceptsStates> {
   @override
   ConceptsStates build() {
     return ConceptsInitialState();
@@ -19,7 +19,7 @@ class ConceptsStateController extends Notifier<ConceptsStates> {
   Future<void> getAllConcepts() async {
     state = ConceptsLoadingState();
     try {
-      final repo = ref.read(conceptsRepositoryProvider);
+      final repo = ref.read(conceptsRepositoryProvider2);
       final concepts = await repo.getAllConcepts();
       state = ConceptsLoadedState(concepts: concepts);
     } catch (e) {
@@ -31,7 +31,7 @@ class ConceptsStateController extends Notifier<ConceptsStates> {
   Future<void> getConcept(String conceptId) async {
     state = ConceptsLoadingState();
     try {
-      final repo = ref.read(conceptsRepositoryProvider);
+      final repo = ref.read(conceptsRepositoryProvider2);
       final concept = await repo.getConcept(conceptId);
       state =
           concept != null
@@ -45,7 +45,7 @@ class ConceptsStateController extends Notifier<ConceptsStates> {
 
   Future<void> addConcept(Concept2 concept) async {
     try {
-      final repo = ref.read(conceptsRepositoryProvider);
+      final repo = ref.read(conceptsRepositoryProvider2);
       await repo.addConcept(concept);
       await getAllConcepts(); // Refresh list
     } catch (e) {
@@ -56,7 +56,7 @@ class ConceptsStateController extends Notifier<ConceptsStates> {
 
   Future<void> updateConcept(Concept2 concept) async {
     try {
-      final repo = ref.read(conceptsRepositoryProvider);
+      final repo = ref.read(conceptsRepositoryProvider2);
       await repo.updateConcept(concept);
       await getAllConcepts(); // Refresh list
     } catch (e) {
@@ -79,7 +79,7 @@ class ConceptsStateController extends Notifier<ConceptsStates> {
   Future<void> getConceptsByGrade(int grade) async {
     state = ConceptsLoadingState();
     try {
-      final repo = ref.read(conceptsRepositoryProvider);
+      final repo = ref.read(conceptsRepositoryProvider2);
       final concepts = await repo.getConceptsByGrade(grade);
       state = ConceptsLoadedState(concepts: concepts);
     } catch (e) {
@@ -91,7 +91,7 @@ class ConceptsStateController extends Notifier<ConceptsStates> {
   Future<void> getConceptsByTopic(String topic) async {
     state = ConceptsLoadingState();
     try {
-      final repo = ref.read(conceptsRepositoryProvider);
+      final repo = ref.read(conceptsRepositoryProvider2);
       final concepts = await repo.getConceptsByTopic(topic);
       state = ConceptsLoadedState(concepts: concepts);
     } catch (e) {

@@ -102,10 +102,10 @@ class AppTextStyles {
     letterSpacing: isUrdu ? 0 : 0.25,
   );
 
-  static TextStyle bodySmall({Color? color, bool isUrdu = false}) => TextStyle(
+  static TextStyle bodySmall({Color? color, bool isUrdu = false, FontWeight? fontWeight}) => TextStyle(
     fontFamily: isUrdu ? urduFont : primaryFont,
     fontSize: 12.sp,
-    fontWeight: FontWeight.normal,
+    fontWeight: fontWeight ?? FontWeight.normal,
     color: color ?? AppColors.textSecondary,
     height: isUrdu ? 2.2 : 1.4,
     letterSpacing: isUrdu ? 0 : 0.4,

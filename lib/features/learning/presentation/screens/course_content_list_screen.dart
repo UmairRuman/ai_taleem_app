@@ -6,18 +6,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:taleem_ai/core/di/injection_container.dart';
+import 'package:taleem_ai/core/domain/entities/conceptMetadata.dart';
 import 'package:taleem_ai/core/domain/entities/institution.dart';
+import 'package:taleem_ai/core/providers/concepts_metadata_provider.dart';
+import 'package:taleem_ai/core/providers/language_provider.dart';
 import 'package:taleem_ai/core/routes/route_names.dart';
 import 'package:taleem_ai/features/admin/fake_data_entry/institution_data_entry_screen.dart';
-import 'package:taleem_ai/features/onboarding/presentation/providers/concepts_provider.dart';
-
-import '../../../../core/domain/entities/concept2.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimensions.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../widgets/concept_card_widget.dart';
 import '../widgets/grade_filter_widget.dart';
-// import '../widgets/shimmer_loading_widget.dart';
 
 class CourseContentListScreen extends ConsumerStatefulWidget {
   final int? initialGrade;
@@ -43,9 +42,11 @@ class _CourseContentListScreenState
     _selectedGrade = widget.initialGrade ?? 6;
     _initializeAnimations();
 
-    // Fetch concepts on init
+    // NEW: Fetch concepts metadata on init (lightweight)
     Future.microtask(() {
-      ref.read(conceptsProvider.notifier).getConceptsByGrade(_selectedGrade);
+      ref
+          .read(conceptsMetadataProvider.notifier)
+          .getMetadataByGrade(_selectedGrade);
     });
   }
 
@@ -75,7 +76,8 @@ class _CourseContentListScreenState
     });
 
     _animationController.reset();
-    ref.read(conceptsProvider.notifier).getConceptsByGrade(grade);
+    // NEW: Fetch metadata by grade
+    ref.read(conceptsMetadataProvider.notifier).getMetadataByGrade(grade);
     _animationController.forward();
   }
 
@@ -84,19 +86,24 @@ class _CourseContentListScreenState
       _selectedTopic = topic;
     });
 
+    // NEW: Fetch metadata by grade or topic
     if (topic == 'All') {
-      ref.read(conceptsProvider.notifier).getConceptsByGrade(_selectedGrade);
+      ref.read(conceptsMetadataProvider.notifier).getMetadataByGrade(_selectedGrade);
     } else {
-      ref.read(conceptsProvider.notifier).getConceptsByTopic(topic);
+      ref.read(conceptsMetadataProvider.notifier).getMetadataByTopic(topic);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final conceptsState = ref.watch(conceptsProvider);
+    // NEW: Watch metadata provider instead
+    final metadataState = ref.watch(conceptsMetadataProvider);
+    final currentLanguage = ref.watch(languageProvider).languageCode;
+
+    // Keep your fake data generation (unchanged)
     final fakeDataGenerator = FakeDataGenerator();
-    final List<Institution> institutions = fakeDataGenerator
-        .generateFakeInstitutions(5);
+    final List<Institution> institutions =
+        fakeDataGenerator.generateFakeInstitutions(5);
     for (var inst in institutions) {
       ref.read(institutionRepositoryProvider).addInstitution(inst);
       log("Institution name : ${inst.name}");
@@ -125,8 +132,8 @@ class _CourseContentListScreenState
             SafeArea(
               child: Column(
                 children: [
-                  // Custom app bar
-                  _buildAppBar(),
+                  // Custom app bar (with language toggle)
+                  _buildAppBar(currentLanguage),
 
                   // Grade filter
                   GradeFilterWidget(
@@ -137,12 +144,12 @@ class _CourseContentListScreenState
                   SizedBox(height: AppDimensions.spaceM),
 
                   // Topic filter
-                  _buildTopicFilter(conceptsState),
+                  _buildTopicFilter(metadataState),
 
                   SizedBox(height: AppDimensions.spaceM),
 
-                  // Content list
-                  Expanded(child: _buildContent(conceptsState)),
+                  // Content list (metadata only)
+                  Expanded(child: _buildContent(metadataState)),
                 ],
               ),
             ),
@@ -183,7 +190,7 @@ class _CourseContentListScreenState
     );
   }
 
-  Widget _buildAppBar() {
+  Widget _buildAppBar(String currentLanguage) {
     return Container(
       padding: EdgeInsets.all(AppDimensions.paddingL),
       child: Row(
@@ -234,6 +241,50 @@ class _CourseContentListScreenState
             ),
           ),
 
+          // NEW: Language toggle button
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                ref.read(languageProvider.notifier).toggleLanguage();
+              },
+              borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+              child: Container(
+                padding: EdgeInsets.all(AppDimensions.paddingS),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.language_rounded,
+                      color: _getGradeColor(),
+                      size: 20.w,
+                    ),
+                    SizedBox(width: 4.w),
+                    Text(
+                      currentLanguage.toUpperCase(),
+                      style: AppTextStyles.bodySmall(
+                        color: _getGradeColor(),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          SizedBox(width: AppDimensions.spaceS),
+
           // Search icon
           Material(
             color: Colors.transparent,
@@ -268,10 +319,11 @@ class _CourseContentListScreenState
     );
   }
 
-  Widget _buildTopicFilter(ConceptsStates state) {
-    if (state is! ConceptsLoadedState) return const SizedBox.shrink();
+  Widget _buildTopicFilter(ConceptsMetadataState state) {
+    // NEW: Handle metadata state types
+    if (state is! ConceptsMetadataLoadedState) return const SizedBox.shrink();
 
-    final topics = ['All', ...state.concepts.map((c) => c.topic).toSet()];
+    final topics = ['All', ...state.metadataList.map((m) => m.topic).toSet()];
 
     return SizedBox(
       height: 45.h,
@@ -297,12 +349,13 @@ class _CourseContentListScreenState
     );
   }
 
-  Widget _buildContent(ConceptsStates state) {
-    if (state is ConceptsLoadingState) {
+  Widget _buildContent(ConceptsMetadataState state) {
+    // NEW: Handle metadata state types
+    if (state is ConceptsMetadataLoadingState) {
       return const ShimmerLoadingWidget();
     }
 
-    if (state is ConceptsErrorState) {
+    if (state is ConceptsMetadataErrorState) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -324,8 +377,8 @@ class _CourseContentListScreenState
             ElevatedButton.icon(
               onPressed: () {
                 ref
-                    .read(conceptsProvider.notifier)
-                    .getConceptsByGrade(_selectedGrade);
+                    .read(conceptsMetadataProvider.notifier)
+                    .getMetadataByGrade(_selectedGrade);
               },
               icon: const Icon(Icons.refresh_rounded),
               label: const Text('Retry'),
@@ -338,8 +391,8 @@ class _CourseContentListScreenState
       );
     }
 
-    if (state is ConceptsLoadedState) {
-      if (state.concepts.isEmpty) {
+    if (state is ConceptsMetadataLoadedState) {
+      if (state.metadataList.isEmpty) {
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -359,24 +412,24 @@ class _CourseContentListScreenState
         );
       }
 
-      // Sort concepts by order
-      final sortedConcepts = List<Concept2>.from(state.concepts)
+      // NEW: Sort metadata by sequenceOrder
+      final sortedMetadata = List<ConceptMetadata>.from(state.metadataList)
         ..sort((a, b) => a.sequenceOrder.compareTo(b.sequenceOrder));
 
       return FadeTransition(
         opacity: _fadeAnimation,
         child: ListView.builder(
           padding: EdgeInsets.all(AppDimensions.paddingL),
-          itemCount: sortedConcepts.length,
+          itemCount: sortedMetadata.length,
           itemBuilder: (context, index) {
-            final concept = sortedConcepts[index];
+            final metadata = sortedMetadata[index];
             return ConceptCardWidget(
-              concept: concept,
+              metadata: metadata, // Pass metadata instead of concept
               gradeColor: _getGradeColor(),
               index: index,
               onTap: () {
                 context.push(
-                  '${RouteNames.conceptDetailScreen}/${concept.conceptId}',
+                  '${RouteNames.conceptDetailScreen}/${metadata.conceptId}',
                 );
               },
             );
@@ -432,16 +485,15 @@ class _TopicChip extends StatelessWidget {
             color: isSelected ? color : AppColors.border,
             width: isSelected ? 2 : 1,
           ),
-          boxShadow:
-              isSelected
-                  ? [
-                    BoxShadow(
-                      color: color.withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                  : null,
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: color.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
         ),
         child: Text(
           topic,
@@ -449,6 +501,20 @@ class _TopicChip extends StatelessWidget {
             color: isSelected ? Colors.white : AppColors.textPrimary,
           ),
         ),
+      ),
+    );
+  }
+}
+
+// NEW: Shimmer loading widget (placeholder - adjust to your existing implementation)
+class ShimmerLoadingWidget extends StatelessWidget {
+  const ShimmerLoadingWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: CircularProgressIndicator(
+        color: AppColors.primary,
       ),
     );
   }

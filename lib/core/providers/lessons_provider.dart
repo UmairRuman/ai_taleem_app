@@ -20,7 +20,7 @@ class LessonsStateController extends Notifier<LessonsStates> {
     try {
       final repo = ref.read(lessonsRepositoryProvider);
       final lessons = await repo.getAllLessons();
-      state = LessonsLoadedState(lessons: lessons);
+      state = LessonsLoadedState(lessons: lessons); 
     } catch (e) {
       state = LessonsErrorState(error: e.toString());
       log("Error in getting lessons: ${e.toString()}");

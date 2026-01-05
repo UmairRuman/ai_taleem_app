@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:taleem_ai/core/providers/concepts_provider.dart';
+import 'package:taleem_ai/core/providers/language_provider.dart';
 import 'package:taleem_ai/core/routes/route_names.dart';
 import 'package:taleem_ai/features/learning/presentation/widgets/content_section_widget.dart';
 import 'package:taleem_ai/features/learning/presentation/widgets/interactive_elements_widget.dart';
-import 'package:taleem_ai/features/onboarding/presentation/providers/concepts_provider.dart';
-import 'package:taleem_ai/shared/providers/language_provider.dart';
-
-import '../../../../core/domain/entities/concept2.dart';
+import '../../../../core/domain/entities/concept.dart';
+import '../../../../core/domain/entities/concept_content.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimensions.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -46,9 +46,10 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
     _initializeAnimations();
     _setupScrollListener();
 
-    // Fetch concept
+    // NEW: Fetch concept with content in current language
     Future.microtask(() {
-      ref.read(conceptsProvider.notifier).getConcept(widget.conceptId);
+      final currentLang = ref.read(languageProvider).languageCode;
+      ref.read(conceptsProvider.notifier).getConcept(widget.conceptId, currentLang);
     });
 
     // Delay FAB appearance
@@ -133,9 +134,10 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
     }
   }
 
-  void _toggleLanguage() {
-    final currentLanguage = ref.read(languageProvider);
-    final newLanguage = currentLanguage == 'en' ? 'ur' : 'en';
+  // NEW: Toggle language with lazy content loading
+  void _toggleLanguage(Concept currentConcept) {
+    final currentLang = ref.read(languageProvider);
+    final newLang = currentLang.languageCode == 'en' ? 'ur' : 'en';
 
     // Animate the rotation
     _fabController.reset();
@@ -144,18 +146,23 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
     // Toggle language
     ref.read(languageProvider.notifier).toggleLanguage();
 
+    // NEW: Lazy load content if not already loaded
+    if (!currentConcept.hasContentLoaded(newLang)) {
+      ref.read(conceptsProvider.notifier).loadConceptContent(currentConcept, newLang);
+    }
+
     // Show snackbar with animation
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
             Icon(
-              newLanguage == 'ur' ? Icons.translate : Icons.language,
+              newLang == 'ur' ? Icons.translate : Icons.language,
               color: Colors.white,
             ),
             SizedBox(width: AppDimensions.spaceM),
             Text(
-              newLanguage == 'ur'
+              newLang == 'ur'
                   ? 'اردو میں تبدیل ہو گیا'
                   : 'Switched to English',
               style: AppTextStyles.bodyMedium(color: Colors.white),
@@ -175,74 +182,73 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
   void _showComingSoonDialog(String feature, IconData icon, Color color) {
     showDialog(
       context: context,
-      builder:
-          (context) => Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusXXL),
-            ),
-            child: Container(
-              padding: EdgeInsets.all(AppDimensions.paddingXL),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(AppDimensions.radiusXXL),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(AppDimensions.paddingL),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          color.withOpacity(0.2),
-                          color.withOpacity(0.1),
-                        ],
-                      ),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(icon, size: 48.w, color: color),
-                  ),
-                  SizedBox(height: AppDimensions.spaceL),
-                  Text(
-                    'Coming Soon!',
-                    style: AppTextStyles.h4(color: AppColors.textPrimary),
-                  ),
-                  SizedBox(height: AppDimensions.spaceM),
-                  Text(
-                    '$feature feature will be available in the next version. Stay tuned for exciting updates!',
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.bodyMedium(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  SizedBox(height: AppDimensions.spaceXL),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: color,
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(
-                          vertical: AppDimensions.paddingM,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            AppDimensions.radiusL,
-                          ),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: Text(
-                        'Got it',
-                        style: AppTextStyles.button(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimensions.radiusXXL),
+        ),
+        child: Container(
+          padding: EdgeInsets.all(AppDimensions.paddingXL),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusXXL),
           ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: EdgeInsets.all(AppDimensions.paddingL),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      color.withOpacity(0.2),
+                      color.withOpacity(0.1),
+                    ],
+                  ),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, size: 48.w, color: color),
+              ),
+              SizedBox(height: AppDimensions.spaceL),
+              Text(
+                'Coming Soon!',
+                style: AppTextStyles.h4(color: AppColors.textPrimary),
+              ),
+              SizedBox(height: AppDimensions.spaceM),
+              Text(
+                '$feature feature will be available in the next version. Stay tuned for exciting updates!',
+                textAlign: TextAlign.center,
+                style: AppTextStyles.bodyMedium(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              SizedBox(height: AppDimensions.spaceXL),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: color,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(
+                      vertical: AppDimensions.paddingM,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radiusL,
+                      ),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    'Got it',
+                    style: AppTextStyles.button(color: Colors.white),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -252,20 +258,19 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
     final conceptState = ref.watch(conceptsProvider);
 
     return Scaffold(
-      body:
-          conceptState is ConceptsSingleLoadedState
-              ? _buildContent(conceptState.concept, languageState)
-              : conceptState is ConceptsLoadingState
+      body: conceptState is ConceptsSingleLoadedState
+          ? _buildContent(conceptState.concept, languageState.languageCode)
+          : conceptState is ConceptsLoadingState
               ? _buildLoading()
               : _buildError(),
-      floatingActionButton:
-          conceptState is ConceptsSingleLoadedState
-              ? _buildLanguageToggleFAB(languageState)
-              : null,
+      floatingActionButton: conceptState is ConceptsSingleLoadedState
+          ? _buildLanguageToggleFAB(languageState.languageCode, conceptState.concept)
+          : null,
     );
   }
 
-  Widget _buildLanguageToggleFAB(String currentLanguage) {
+  // NEW: Pass concept for lazy loading
+  Widget _buildLanguageToggleFAB(String currentLanguage, Concept concept) {
     return AnimatedBuilder(
       animation: _fabScaleAnimation,
       builder: (context, child) {
@@ -286,7 +291,7 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: _toggleLanguage,
+            onTap: () => _toggleLanguage(concept),
             borderRadius: BorderRadius.circular(AppDimensions.radiusXXL),
             child: Container(
               padding: EdgeInsets.symmetric(
@@ -307,7 +312,6 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Language icon with rotation animation
                   AnimatedBuilder(
                     animation: _fabRotationAnimation,
                     builder: (context, child) {
@@ -325,7 +329,6 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
                     ),
                   ),
                   SizedBox(width: AppDimensions.spaceS),
-                  // Language text
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
                     transitionBuilder: (child, animation) {
@@ -355,9 +358,17 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
     );
   }
 
-  Widget _buildContent(Concept2 concept, String languageState) {
-    log("Concept Image path: ${concept.images.toString()}");
-    final gradeColor = _getGradeColor(concept.gradeLevel);
+  // NEW: Updated to use Concept and ConceptContent
+  Widget _buildContent(Concept concept, String languageCode) {
+    final content = concept.getContent(languageCode);
+    
+    // Show loading if content not yet loaded for this language
+    if (content == null) {
+      return _buildLoading();
+    }
+
+    log("Concept Image path: ${content.images.toString()}");
+    final gradeColor = _getGradeColor(concept.metadata.gradeLevel);
 
     return Container(
       decoration: BoxDecoration(
@@ -374,50 +385,32 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
       ),
       child: Stack(
         children: [
-          // Background decorations
           _buildBackgroundDecorations(gradeColor),
-
-          // Main content
           CustomScrollView(
             controller: _scrollController,
             slivers: [
-              // Animated app bar
-              _buildSliverAppBar(concept, gradeColor, languageState),
-
-              // Content
+              _buildSliverAppBar(concept, content, gradeColor),
               SliverToBoxAdapter(
                 child: SlideTransition(
                   position: _slideAnimation,
                   child: Column(
                     children: [
-                      // Hero section
-                      _buildHeroSection(concept, gradeColor, languageState),
-
-                      // Tutorial Card (now full width)
-                      _buildTutorialCard(concept, gradeColor),
-
-                      // Content sections
+                      _buildHeroSection(concept, content, gradeColor),
+                      _buildTutorialCard(gradeColor),
                       ContentSectionWidget(
-                        languageState: languageState,
-                        conceptImages: concept.images,
-                        concept: concept,
+                        languageState: languageCode,
+                        conceptImages: content.images,
+                        content: content,
+                        metadata: concept.metadata,
                         gradeColor: gradeColor,
                       ),
                       SizedBox(height: AppDimensions.spaceXL),
-
-                      // Interactive Elements section
                       InteractiveElementsWidget(
-                        interactiveElements: concept.interactiveElements,
+                        interactiveElements: content.interactiveElements,
                         gradeColor: gradeColor,
                       ),
-
-                      // Quiz button
-                      if (concept
-                          .localizedContent[languageState]!
-                          .practiceQuiz
-                          .isNotEmpty)
-                        _buildQuizButton(concept, gradeColor),
-
+                      if (content.practiceQuiz.isNotEmpty)
+                        _buildQuizButton(concept, content, gradeColor),
                       SizedBox(height: AppDimensions.spaceXXL * 2),
                     ],
                   ),
@@ -430,7 +423,7 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
     );
   }
 
-  Widget _buildTutorialCard(Concept2 concept, Color gradeColor) {
+  Widget _buildTutorialCard(Color gradeColor) {
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: AppDimensions.paddingL,
@@ -449,12 +442,11 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap:
-                () => _showComingSoonDialog(
-                  'Video Tutorial',
-                  Icons.play_circle_filled_rounded,
-                  gradeColor,
-                ),
+            onTap: () => _showComingSoonDialog(
+              'Video Tutorial',
+              Icons.play_circle_filled_rounded,
+              gradeColor,
+            ),
             borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
             child: Container(
               width: double.infinity,
@@ -479,7 +471,6 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
               ),
               child: Row(
                 children: [
-                  // Play icon container
                   Container(
                     padding: EdgeInsets.all(AppDimensions.paddingM),
                     decoration: BoxDecoration(
@@ -493,7 +484,6 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
                     ),
                   ),
                   SizedBox(width: AppDimensions.spaceL),
-                  // Text content
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -512,7 +502,6 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
                       ],
                     ),
                   ),
-                  // Coming soon badge
                   Container(
                     padding: EdgeInsets.symmetric(
                       horizontal: AppDimensions.paddingM,
@@ -520,9 +509,7 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
                     ),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.radiusL,
-                      ),
+                      borderRadius: BorderRadius.circular(AppDimensions.radiusL),
                       border: Border.all(
                         color: Colors.white.withOpacity(0.5),
                         width: 1,
@@ -578,10 +565,11 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
     );
   }
 
+  // NEW: Updated to use Concept and ConceptContent
   Widget _buildSliverAppBar(
-    Concept2 concept,
+    Concept concept,
+    ConceptContent content,
     Color gradeColor,
-    String languageState,
   ) {
     return SliverAppBar(
       expandedHeight: 200.h,
@@ -595,10 +583,7 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
           borderRadius: BorderRadius.circular(AppDimensions.radiusL),
           child: InkWell(
             onTap: () {
-              log("Grade level: ${concept.gradeLevel}");
-              ref
-                  .read(conceptsProvider.notifier)
-                  .getConceptsByGrade(concept.gradeLevel);
+              log("Grade level: ${concept.metadata.gradeLevel}");
               context.pop();
             },
             borderRadius: BorderRadius.circular(AppDimensions.radiusL),
@@ -617,7 +602,7 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
             return Opacity(
               opacity: 1 - _headerAnimation.value,
               child: Text(
-                concept.localizedContent[languageState]!.title,
+                content.title,
                 style: AppTextStyles.h5(color: Colors.white),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -654,54 +639,46 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
     );
   }
 
+  // NEW: Updated to use Concept and ConceptContent
   Widget _buildHeroSection(
-    Concept2 concept,
+    Concept concept,
+    ConceptContent content,
     Color gradeColor,
-    String languageState,
   ) {
     return Container(
       padding: EdgeInsets.all(AppDimensions.paddingL),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title
-          Text(
-            concept.localizedContent[languageState]!.title,
-            style: AppTextStyles.display2(),
-          ),
-
+          Text(content.title, style: AppTextStyles.display2()),
           SizedBox(height: AppDimensions.spaceM),
-
-          // Badges row
           Wrap(
             spacing: AppDimensions.spaceM,
             runSpacing: AppDimensions.spaceS,
             children: [
               _buildBadge(
                 icon: Icons.class_rounded,
-                label: 'Grade ${concept.gradeLevel}',
+                label: 'Grade ${concept.metadata.gradeLevel}',
                 color: gradeColor,
               ),
               _buildBadge(
                 icon: Icons.topic_rounded,
-                label: concept.topic,
+                label: concept.metadata.topic,
                 color: AppColors.secondary,
               ),
               _buildBadge(
                 icon: Icons.access_time_rounded,
-                label: '${concept.estimatedTimeMinutes} min',
+                label: '${concept.metadata.estimatedTimeMinutes} min',
                 color: AppColors.info,
               ),
               _buildBadge(
-                icon: _getDifficultyIcon(concept.difficulty),
-                label: concept.difficulty,
-                color: _getDifficultyColor(concept.difficulty),
+                icon: _getDifficultyIcon(concept.metadata.difficultyLevel),
+                label: concept.metadata.difficultyLevel,
+                color: _getDifficultyColor(concept.metadata.difficultyLevel),
               ),
             ],
           ),
-
-          // Prerequisites
-          if (concept.prerequisites.isNotEmpty) ...[
+          if (concept.metadata.hasPrerequisites) ...[
             SizedBox(height: AppDimensions.spaceL),
             _buildPrerequisitesSection(concept),
           ],
@@ -736,7 +713,7 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
     );
   }
 
-  Widget _buildPrerequisitesSection(Concept2 concept) {
+  Widget _buildPrerequisitesSection(Concept concept) {
     return Container(
       padding: EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
@@ -758,7 +735,7 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
             ],
           ),
           SizedBox(height: AppDimensions.spaceM),
-          ...concept.prerequisites.map(
+          ...concept.metadata.prerequisites.map(
             (prereq) => Padding(
               padding: EdgeInsets.only(bottom: AppDimensions.spaceS),
               child: Row(
@@ -786,7 +763,7 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
     );
   }
 
-  Widget _buildQuizButton(Concept2 concept, Color gradeColor) {
+  Widget _buildQuizButton(Concept concept, ConceptContent content, Color gradeColor) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
       child: Material(
@@ -794,7 +771,7 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
         child: InkWell(
           onTap: () {
             context.push(
-              '${RouteNames.conceptQuizScreen}/${concept.conceptId}',
+              '${RouteNames.conceptQuizScreen}/${concept.metadata.conceptId}',
             );
           },
           borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
@@ -850,6 +827,15 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
           Icon(Icons.error_outline_rounded, size: 64.w, color: AppColors.error),
           SizedBox(height: AppDimensions.spaceL),
           Text('Failed to load concept', style: AppTextStyles.h4()),
+          SizedBox(height: AppDimensions.spaceL),
+          ElevatedButton.icon(
+            onPressed: () {
+              final currentLang = ref.read(languageProvider).languageCode;
+              ref.read(conceptsProvider.notifier).getConcept(widget.conceptId, currentLang);
+            },
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('Retry'),
+          ),
         ],
       ),
     );
@@ -857,10 +843,13 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
 
   IconData _getDifficultyIcon(String difficulty) {
     switch (difficulty.toLowerCase()) {
+      case 'basic':
       case 'easy':
         return Icons.sentiment_satisfied_rounded;
+      case 'intermediate':
       case 'medium':
         return Icons.sentiment_neutral_rounded;
+      case 'advanced':
       case 'hard':
         return Icons.local_fire_department_rounded;
       default:
@@ -870,10 +859,13 @@ class _ConceptDetailScreenState extends ConsumerState<ConceptDetailScreen>
 
   Color _getDifficultyColor(String difficulty) {
     switch (difficulty.toLowerCase()) {
+      case 'basic':
       case 'easy':
         return AppColors.easy;
+      case 'intermediate':
       case 'medium':
         return AppColors.medium;
+      case 'advanced':
       case 'hard':
         return AppColors.hard;
       default:
